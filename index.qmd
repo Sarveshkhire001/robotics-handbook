@@ -1,0 +1,34 @@
+---
+title: "ROBOTICS HANDBOOK"
+author: "Sarvesh Khire"
+page-layout: full
+listing:
+  - id: slam-chapters
+    contents:
+      - chapters/factor-graphs-slam/overview.qmd
+    type: grid
+    fields: [title, subtitle]
+    sort: false
+---
+
+## Notes on Robotics Fundamentals
+
+Concepts and mathematics from robotics, SLAM, and localization — written
+the way I wish someone had explained them to me.
+
+### SLAM
+
+:::{#slam-chapters}
+:::
+
+### Localization
+
+*(coming soon)*
+
+### Mapping
+
+*(coming soon)*
+
+### Navigation
+
+*(coming soon)*

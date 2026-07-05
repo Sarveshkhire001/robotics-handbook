@@ -1,0 +1,23 @@
+/* css styles */
+
+/* Proportional page columns: every track is a percentage of the
+   viewport, so sidebar / body / TOC all scale together at any
+   screen size instead of hitting a fixed px ceiling. Quarto's own
+   mobile breakpoint still collapses this grid on narrow screens. */
+.page-columns {
+  grid-template-columns:
+    [screen-start] 1%
+    [page-start] 1%
+    [sidebar-start] 15%
+    [sidebar-end] 2%
+    [body-start] 70%
+    [body-end] 2%
+    [margin-start] 8%
+    [margin-end] 0.5%
+    [page-end] 0.5%
+    [screen-end];
+}
+
+.column-body {
+  max-width: 100%;
+}

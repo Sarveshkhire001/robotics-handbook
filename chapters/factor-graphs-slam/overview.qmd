@@ -1,0 +1,84 @@
+---
+title: "Overview"
+---
+
+## Overview
+
+Here's the core problem SLAM is trying to solve: given thousands of noisy 
+sensor measurements, how do we estimate both the robot's trajectory and 
+the map it's moving through?
+
+The pipeline looks like this:
+
+**Sensors → Measurements → Factor Graph → Probability → MAP Estimation 
+→ Least Squares → Sparse Matrix Solver → Best robot pose + map**
+
+Every arrow in that chain is doing real work, and we'll unpack each one 
+as we go.
+
+## The Two Halves of SLAM
+
+SLAM naturally splits into two subsystems that do very different jobs:
+
+| Frontend | Backend |
+|---|---|
+| Extracts features | Receives constraints |
+| ICP correspondences | Creates the graph |
+| Scan matching | Optimization |
+| Visual features | Trajectory estimation |
+| Loop closure detection | |
+| Data association | |
+
+Think of the frontend as *perception* — turning raw sensor data into 
+usable geometric relationships — and the backend as *inference* — taking 
+those relationships and solving for the most consistent trajectory and map.
+
+The historical arc of how we solve the backend:
+
+$$
+\text{EKF SLAM} \rightarrow \text{Square Root SLAM} \rightarrow \text{Factor Graph SLAM}
+$$
+
+## Visualizing SLAM with Factor Graphs
+
+### The unknowns
+
+We're solving for a state vector containing both robot poses and 
+landmarks:
+
+$$
+\mathbf{x} = \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ l_1 \\ l_2 \end{bmatrix}
+$$
+
+where $p_i$ are robot poses at different times and $l_i$ are landmark 
+positions.
+
+### Known vs. unknown
+
+The measurements are what's "known" — but here's the key idea that trips 
+people up at first: **every measurement carries uncertainty.** A LiDAR 
+scan doesn't tell you "the wall is exactly 3.000m away." It tells you 
+"the wall is probably around 3m away, plus or minus some noise."
+
+That uncertainty is *why* SLAM is fundamentally a probability problem, 
+not a geometry problem.
+
+> **The robot never knows — it only believes.**
+
+This isn't just a nice turn of phrase — it's the mathematical foundation 
+of the whole field. The robot maintains a *belief*: a probability 
+distribution over where it might be, not a single certain answer.
+
+### Why probabilities must sum to one
+
+$$
+\int p(x)\,dx = 1
+$$
+
+This says: all possibilities sum to 1. In plain terms — the robot **must** 
+exist somewhere. Its belief might be spread out and uncertain, but that 
+uncertainty is distributed over the full space of possibilities, and it 
+always adds up to total certainty that *some* pose is the true one.
+
+This single constraint is what turns "the robot is confused about its 
+position" into something we can actually compute with.
