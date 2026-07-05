@@ -1,0 +1,83 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "ROBOTICS HANDBOOK",
+    "section": "",
+    "text": "Concepts and mathematics from robotics, SLAM, and localization — written the way I wish someone had explained them to me.\n\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items\n\n\n\n\n(coming soon)\n\n\n\n(coming soon)\n\n\n\n(coming soon)"
+  },
+  {
+    "objectID": "index.html#notes-on-robotics-fundamentals",
+    "href": "index.html#notes-on-robotics-fundamentals",
+    "title": "ROBOTICS HANDBOOK",
+    "section": "",
+    "text": "Concepts and mathematics from robotics, SLAM, and localization — written the way I wish someone had explained them to me.\n\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items\n\n\n\n\n(coming soon)\n\n\n\n(coming soon)\n\n\n\n(coming soon)"
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/notes.html",
+    "href": "chapters/factor-graphs-slam/notes.html",
+    "title": "Notes",
+    "section": "",
+    "text": "Content coming soon.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Notes"
+    ]
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site"
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/overview.html",
+    "href": "chapters/factor-graphs-slam/overview.html",
+    "title": "Overview",
+    "section": "",
+    "text": "Here’s the core problem SLAM is trying to solve: given thousands of noisy sensor measurements, how do we estimate both the robot’s trajectory and the map it’s moving through?\nThe pipeline looks like this:\nSensors → Measurements → Factor Graph → Probability → MAP Estimation → Least Squares → Sparse Matrix Solver → Best robot pose + map\nEvery arrow in that chain is doing real work, and we’ll unpack each one as we go.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/overview.html#overview",
+    "href": "chapters/factor-graphs-slam/overview.html#overview",
+    "title": "Overview",
+    "section": "",
+    "text": "Here’s the core problem SLAM is trying to solve: given thousands of noisy sensor measurements, how do we estimate both the robot’s trajectory and the map it’s moving through?\nThe pipeline looks like this:\nSensors → Measurements → Factor Graph → Probability → MAP Estimation → Least Squares → Sparse Matrix Solver → Best robot pose + map\nEvery arrow in that chain is doing real work, and we’ll unpack each one as we go.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/overview.html#the-two-halves-of-slam",
+    "href": "chapters/factor-graphs-slam/overview.html#the-two-halves-of-slam",
+    "title": "Overview",
+    "section": "The Two Halves of SLAM",
+    "text": "The Two Halves of SLAM\nSLAM naturally splits into two subsystems that do very different jobs:\n\n\n\nFrontend\nBackend\n\n\n\n\nExtracts features\nReceives constraints\n\n\nICP correspondences\nCreates the graph\n\n\nScan matching\nOptimization\n\n\nVisual features\nTrajectory estimation\n\n\nLoop closure detection\n\n\n\nData association\n\n\n\n\nThink of the frontend as perception — turning raw sensor data into usable geometric relationships — and the backend as inference — taking those relationships and solving for the most consistent trajectory and map.\nThe historical arc of how we solve the backend:\n\\[\n\\text{EKF SLAM} \\rightarrow \\text{Square Root SLAM} \\rightarrow \\text{Factor Graph SLAM}\n\\]",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/overview.html#visualizing-slam-with-factor-graphs",
+    "href": "chapters/factor-graphs-slam/overview.html#visualizing-slam-with-factor-graphs",
+    "title": "Overview",
+    "section": "Visualizing SLAM with Factor Graphs",
+    "text": "Visualizing SLAM with Factor Graphs\n\nThe unknowns\nWe’re solving for a state vector containing both robot poses and landmarks:\n\\[\n\\mathbf{x} = \\begin{bmatrix} p_1 \\\\ p_2 \\\\ p_3 \\\\ l_1 \\\\ l_2 \\end{bmatrix}\n\\]\nwhere \\(p_i\\) are robot poses at different times and \\(l_i\\) are landmark positions.\n\n\nKnown vs. unknown\nThe measurements are what’s “known” — but here’s the key idea that trips people up at first: every measurement carries uncertainty. A LiDAR scan doesn’t tell you “the wall is exactly 3.000m away.” It tells you “the wall is probably around 3m away, plus or minus some noise.”\nThat uncertainty is why SLAM is fundamentally a probability problem, not a geometry problem.\n\nThe robot never knows — it only believes.\n\nThis isn’t just a nice turn of phrase — it’s the mathematical foundation of the whole field. The robot maintains a belief: a probability distribution over where it might be, not a single certain answer.\n\n\nWhy probabilities must sum to one\n\\[\n\\int p(x)\\,dx = 1\n\\]\nThis says: all possibilities sum to 1. In plain terms — the robot must exist somewhere. Its belief might be spread out and uncertain, but that uncertainty is distributed over the full space of possibilities, and it always adds up to total certainty that some pose is the true one.\nThis single constraint is what turns “the robot is confused about its position” into something we can actually compute with.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Overview"
+    ]
+  }
+]
