@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Notes – Robotics Handbook</title>
+<title>Least Squares and MAP Estimation – Robotics Handbook</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -73,6 +73,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -246,7 +275,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/notes.html">Notes</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/least_squares.html">Least Squares and MAP Estimation</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -300,8 +329,14 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../chapters/factor-graphs-slam/notes.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Notes</span></a>
+  <a href="../../chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Visualizing SLAM with Factor Graphs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/factor-graphs-slam/least_squares.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Least Squares and MAP Estimation</span></a>
   </div>
 </li>
       </ul>
@@ -313,16 +348,36 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#least-squares" id="toc-least-squares" class="nav-link active" data-scroll-target="#least-squares">Least Squares</a>
+  <ul class="collapse">
+  <li><a href="#setting-up-the-unknowns" id="toc-setting-up-the-unknowns" class="nav-link" data-scroll-target="#setting-up-the-unknowns">Setting up the unknowns</a></li>
+  </ul></li>
+  <li><a href="#map-estimation" id="toc-map-estimation" class="nav-link" data-scroll-target="#map-estimation">MAP Estimation</a>
+  <ul class="collapse">
+  <li><a href="#applying-bayes-theorem" id="toc-applying-bayes-theorem" class="nav-link" data-scroll-target="#applying-bayes-theorem">Applying Bayes’ theorem</a></li>
+  <li><a href="#rewriting-with-factors" id="toc-rewriting-with-factors" class="nav-link" data-scroll-target="#rewriting-with-factors">Rewriting with factors</a></li>
+  </ul></li>
+  <li><a href="#modeling-measurement-noise" id="toc-modeling-measurement-noise" class="nav-link" data-scroll-target="#modeling-measurement-noise">Modeling Measurement Noise</a></li>
+  <li><a href="#reading-the-pieces" id="toc-reading-the-pieces" class="nav-link" data-scroll-target="#reading-the-pieces">Reading the Pieces</a></li>
+  <li><a href="#the-mahalanobis-distance" id="toc-the-mahalanobis-distance" class="nav-link" data-scroll-target="#the-mahalanobis-distance">The Mahalanobis Distance</a></li>
+  <li><a href="#putting-the-factors-together" id="toc-putting-the-factors-together" class="nav-link" data-scroll-target="#putting-the-factors-together">Putting the Factors Together</a></li>
+  <li><a href="#the-product-problem" id="toc-the-product-problem" class="nav-link" data-scroll-target="#the-product-problem">The Product Problem</a></li>
+  <li><a href="#from-map-to-a-concrete-optimization-problem" id="toc-from-map-to-a-concrete-optimization-problem" class="nav-link" data-scroll-target="#from-map-to-a-concrete-optimization-problem">From MAP to a Concrete Optimization Problem</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/notes.html">Notes</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/least_squares.html">Least Squares and MAP Estimation</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Notes</h1>
+<h1 class="title">Least Squares and MAP Estimation</h1>
 </div>
 
 
@@ -339,9 +394,149 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>Content coming soon.</p>
+<section id="least-squares" class="level2">
+<h2 class="anchored" data-anchor-id="least-squares">Least Squares</h2>
+<p>Here’s the reframing that makes SLAM computationally tractable:</p>
+<blockquote class="blockquote">
+<p><strong>What is the most probable robot trajectory?</strong> is exactly equivalent to <strong>minimize the sum of squared errors.</strong></p>
+</blockquote>
+<p>That equivalence falls directly out of assuming Gaussian noise — we’ll derive it properly in a later section. For now, here’s the pipeline it sets up:</p>
+<p><strong>Measurements → Posterior → MAP estimate → Gaussian probability → negative log → Least squares → Gauss-Newton / Levenberg-Marquardt</strong></p>
+<section id="setting-up-the-unknowns" class="level3">
+<h3 class="anchored" data-anchor-id="setting-up-the-unknowns">Setting up the unknowns</h3>
+<p>The unknowns are the full state vector, and the measurements are whatever the sensors actually gave us:</p>
+<p><span class="math display">\[
+x = \begin{bmatrix} P_1 \\ P_2 \\ \vdots \\ l_1 \\ l_2 \\ \vdots \end{bmatrix}
+\qquad
+z = \{z_1, z_2, \dots, z_m\}
+\]</span></p>
+<p><strong>The goal:</strong> find the best value of <span class="math inline">\(x\)</span> given <span class="math inline">\(z\)</span> — in other words, maximize <span class="math inline">\(p(x \mid z)\)</span>.</p>
+</section>
+</section>
+<section id="map-estimation" class="level2">
+<h2 class="anchored" data-anchor-id="map-estimation">MAP Estimation</h2>
+<p>MAP stands for <em>Maximum A Posteriori</em> — we want the state whose posterior probability is highest:</p>
+<p><span class="math display">\[
+x_{MAP} = \operatorname*{argmax}_{x} \; p(x \mid z)
+\]</span></p>
+<section id="applying-bayes-theorem" class="level3">
+<h3 class="anchored" data-anchor-id="applying-bayes-theorem">Applying Bayes’ theorem</h3>
+<p>Directly optimizing <span class="math inline">\(p(x \mid z)\)</span> is awkward, so we flip it using Bayes’ rule:</p>
+<p><span class="math display">\[
+x_{MAP} = \operatorname*{argmax}_{x} \;
+\underbrace{p(z \mid x)}_{\text{likelihood}} \cdot
+\underbrace{p(x)}_{\text{prior}}
+\]</span></p>
+<p>These two terms have intuitive meanings:</p>
+<ul>
+<li><strong>Likelihood</strong> <span class="math inline">\(p(z \mid x)\)</span> — does this candidate state actually explain the measurements we observed?</li>
+<li><strong>Prior</strong> <span class="math inline">\(p(x)\)</span> — is this state physically plausible in the first place?</li>
+</ul>
+<p>We can drop <span class="math inline">\(p(z)\)</span> entirely, since it doesn’t depend on <span class="math inline">\(x\)</span> — it’s just a normalizing constant.</p>
+</section>
+<section id="rewriting-with-factors" class="level3">
+<h3 class="anchored" data-anchor-id="rewriting-with-factors">Rewriting with factors</h3>
+<p>Since the posterior already factors into a product of <span class="math inline">\(\phi_i\)</span> terms (as we saw earlier), this becomes:</p>
+<p><span class="math display">\[
+x_{MAP} = \operatorname*{argmax}_{x} \; \prod_i \phi_i(x_i)
+\]</span></p>
+<p>Nothing has changed mathematically — we’ve just rewritten the same optimization in terms of factors. But this is the <strong>general MAP problem</strong>, and it’s exactly the form every SLAM backend is actually solving.</p>
+</section>
+</section>
+<section id="modeling-measurement-noise" class="level2">
+<h2 class="anchored" data-anchor-id="modeling-measurement-noise">Modeling Measurement Noise</h2>
+<p>Every real sensor measurement is a mix of a true underlying signal and noise. We model this as:</p>
+<p><span class="math display">\[
+z = h(x) + \eta
+\]</span></p>
+<ul>
+<li><span class="math inline">\(h(x)\)</span> is the <strong>prediction function</strong> — it comes from pure geometry and physics, with no randomness involved.</li>
+<li><span class="math inline">\(\eta\)</span> is the <strong>noise</strong>, assumed Gaussian: <span class="math inline">\(\eta \sim \mathcal{N}(0, \Sigma)\)</span>.</li>
+</ul>
+<p>That Gaussian assumption on the noise is doing a lot of work here — it’s what eventually lets “most probable trajectory” collapse into “minimize sum of squared errors.”</p>
+<p>Given this noise model, the probability of observing <span class="math inline">\(z\)</span> given a state <span class="math inline">\(x\)</span> is:</p>
+<p><span class="math display">\[
+p(z \mid x) = \mathcal{N}(z;\, h(x), \Sigma)
+\]</span></p>
+<p>Expanding the Gaussian density explicitly:</p>
+<p><span class="math display">\[
+p(z \mid x) = \frac{1}{\sqrt{2\pi\Sigma}}
+\exp\left(-\frac{1}{2} [z - h(x)]^T \Sigma^{-1} [z - h(x)]\right)
+\]</span></p>
+</section>
+<section id="reading-the-pieces" class="level2">
+<h2 class="anchored" data-anchor-id="reading-the-pieces">Reading the Pieces</h2>
+<ul>
+<li><span class="math inline">\(z - h(x)\)</span> is the <strong>residual</strong>: actual measurement minus predicted measurement. It’s a direct measure of <em>how wrong our current estimate is</em>.</li>
+<li>Inside the exponent we have the <strong>squared residual</strong>, weighted by <span class="math inline">\(\Sigma^{-1}\)</span>.</li>
+<li><span class="math inline">\(\Sigma\)</span> embeds the noise — it’s the <strong>covariance</strong> of the measurement.</li>
+<li><span class="math inline">\(\Sigma^{-1}\)</span> is called the <strong>information matrix</strong>, since it tells us how much confidence we place in this measurement (a tighter covariance means more information).</li>
+</ul>
+</section>
+<section id="the-mahalanobis-distance" class="level2">
+<h2 class="anchored" data-anchor-id="the-mahalanobis-distance">The Mahalanobis Distance</h2>
+<p>The weighted squared residual has a name:</p>
+<p><span class="math display">\[
+[z - h(x)]^T \Sigma^{-1} [z - h(x)] = \text{Mahalanobis distance squared}
+\]</span></p>
+<p>Unlike ordinary Euclidean distance, Mahalanobis distance accounts for <em>how uncertain</em> each dimension of the measurement is — a large deviation in a noisy direction counts for less than the same deviation in a precise direction. We give it its own compact notation:</p>
+<p><span class="math display">\[
+\|e\|^2_\Sigma = e^T \Sigma^{-1} e
+\]</span></p>
+<p>This is exactly the quantity each factor in a SLAM problem is scoring.</p>
+</section>
+<section id="putting-the-factors-together" class="level2">
+<h2 class="anchored" data-anchor-id="putting-the-factors-together">Putting the Factors Together</h2>
+<p>Recall the MAP objective in terms of factors:</p>
+<p><span class="math display">\[
+x_{MAP} = \operatorname*{argmax}_{x} \; \prod_i \phi_i(x_i)
+\]</span></p>
+<p>Given the Gaussian noise model, each factor takes the form:</p>
+<p><span class="math display">\[
+\phi_i(x_i) \propto \exp\left(-\frac{1}{2} \|z_i - h_i(x_i)\|^2_{\Sigma_i}\right)
+\]</span></p>
+<p>which we can write more compactly as:</p>
+<p><span class="math display">\[
+\phi_i(x_i) = c_i \cdot e^{-E_i}
+\]</span></p>
+<p>where <span class="math inline">\(E_i = \frac{1}{2}\|z_i - h_i(x_i)\|^2_{\Sigma_i}\)</span> is the weighted squared error for factor <span class="math inline">\(i\)</span>.</p>
+</section>
+<section id="the-product-problem" class="level2">
+<h2 class="anchored" data-anchor-id="the-product-problem">The Product Problem</h2>
+<p>Here’s a practical issue: the MAP objective is a <strong>product</strong> of many exponential terms:</p>
+<p><span class="math display">\[
+x_{MAP} \to \exp(-a) \cdot \exp(-b) \cdot \exp(-c) \cdots
+\]</span></p>
+<p>Optimizers don’t work well with long products — products of many small numbers underflow numerically, and their derivatives get messy. The fix is to <strong>take logarithms</strong>, which turns the product into a sum:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\prod_i \exp(-E_i)
+\;\longrightarrow\;
+&amp; \log\left(\prod_i \exp(-E_i)\right) \\
+\;\longrightarrow\;
+&amp; \sum_i \log(\exp(-E_i)) \\
+\;\longrightarrow\;
+&amp; \sum_i (-E_i)
+\end{aligned}
+\]</span></p>
+<p>Since <span class="math inline">\(\log\)</span> is monotonic, maximizing the product is equivalent to maximizing the log-sum. And flipping the sign turns a maximization into a minimization:</p>
+<p><span class="math display">\[
+\operatorname*{argmax}\left(-\sum_i E_i\right)
+= \operatorname*{argmin}\left(\sum_i E_i\right)
+\]</span></p>
+<p>This is the final piece connecting everything: <strong>maximizing the posterior probability is exactly equivalent to minimizing a sum of weighted squared residuals</strong> — which is precisely the least-squares objective we started with back in the <a href="#least-squares">Least Squares</a> section.</p>
+</section>
+<section id="from-map-to-a-concrete-optimization-problem" class="level2">
+<h2 class="anchored" data-anchor-id="from-map-to-a-concrete-optimization-problem">From MAP to a Concrete Optimization Problem</h2>
+<p>Taking the MAP formulation and working through the Gaussian noise assumption from the previous section eventually lands us here:</p>
+<p><span class="math display">\[
+x_{MAP} = \operatorname*{argmin}_{x} \sum_i \| z_i - h_i(x_i) \|^2_{\Sigma_i}
+\quad \to \quad \text{Least squares}
+\]</span></p>
+<p>This is a <strong>least squares</strong> problem. But there’s a catch: <span class="math inline">\(h_i(x)\)</span> — the function that predicts a measurement from a state — is generally a <strong>non-linear function</strong> of the state. Bearing angles, ranges, rotations: none of these are linear in <span class="math inline">\(x\)</span>. So what we actually have is a <strong>non-linear least squares</strong> problem.</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -430,7 +625,7 @@ ul.task-list li input[type="checkbox"] {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/Sarveshkhire001\.github\.io\/robotics-handbook\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

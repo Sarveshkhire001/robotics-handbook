@@ -6,9 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Sarvesh Khire">
 
-<title>ROBOTICS HANDBOOK – Robotics Handbook</title>
+<title>Visualizing SLAM with Factor Graphs – Robotics Handbook</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -27,27 +26,25 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-787e033c7b6f65c9dfccb6078e5d2d34.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-8487d1d9185897d8e9c8717c2b868418.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-787e033c7b6f65c9dfccb6078e5d2d34.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-8487d1d9185897d8e9c8717c2b868418.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -75,35 +72,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-slam-chapters .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-title','listing-subtitle',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-slam-chapters'] = new List('listing-slam-chapters', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -135,7 +103,7 @@ window.Quarto = {
 };
 </script>
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../styles.css">
 </head>
 
 <body class="nav-sidebar docked quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
@@ -307,9 +275,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">
-      Robotics Handbook
-      </li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html">Visualizing SLAM with Factor Graphs</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -319,12 +285,12 @@ window.Quarto = {
   </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Robotics Handbook</a> 
+      <a href="../../">Robotics Handbook</a> 
         <div class="sidebar-tools-main">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
@@ -348,28 +314,28 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Factor Graphs for SLAM</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/overview.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/overview.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Overview</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Visualizing SLAM with Factor Graphs</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/least_squares.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/least_squares.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Least Squares and MAP Estimation</span></a>
   </div>
 </li>
@@ -387,35 +353,36 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#notes-on-robotics-fundamentals" id="toc-notes-on-robotics-fundamentals" class="nav-link active" data-scroll-target="#notes-on-robotics-fundamentals">Notes on Robotics Fundamentals</a>
+  <li><a href="#the-unknowns" id="toc-the-unknowns" class="nav-link active" data-scroll-target="#the-unknowns">The unknowns</a></li>
+  <li><a href="#known-vs.-unknown" id="toc-known-vs.-unknown" class="nav-link" data-scroll-target="#known-vs.-unknown">Known vs.&nbsp;unknown</a></li>
+  <li><a href="#why-probabilities-must-sum-to-one" id="toc-why-probabilities-must-sum-to-one" class="nav-link" data-scroll-target="#why-probabilities-must-sum-to-one">Why probabilities must sum to one</a></li>
+  <li><a href="#the-state-vector" id="toc-the-state-vector" class="nav-link" data-scroll-target="#the-state-vector">The State Vector</a></li>
+  <li><a href="#the-posterior-distribution" id="toc-the-posterior-distribution" class="nav-link" data-scroll-target="#the-posterior-distribution">The Posterior Distribution</a></li>
+  <li><a href="#why-factor-graphs" id="toc-why-factor-graphs" class="nav-link" data-scroll-target="#why-factor-graphs">Why Factor Graphs?</a></li>
+  <li><a href="#bayesian-networks" id="toc-bayesian-networks" class="nav-link" data-scroll-target="#bayesian-networks">Bayesian Networks</a>
   <ul class="collapse">
-  <li><a href="#slam" id="toc-slam" class="nav-link" data-scroll-target="#slam">SLAM</a></li>
-  <li><a href="#localization" id="toc-localization" class="nav-link" data-scroll-target="#localization">Localization</a></li>
-  <li><a href="#mapping" id="toc-mapping" class="nav-link" data-scroll-target="#mapping">Mapping</a></li>
-  <li><a href="#navigation" id="toc-navigation" class="nav-link" data-scroll-target="#navigation">Navigation</a></li>
+  <li><a href="#applying-this-to-our-state-vector" id="toc-applying-this-to-our-state-vector" class="nav-link" data-scroll-target="#applying-this-to-our-state-vector">Applying this to our state vector</a></li>
+  <li><a href="#from-bayesian-network-to-factor-graph" id="toc-from-bayesian-network-to-factor-graph" class="nav-link" data-scroll-target="#from-bayesian-network-to-factor-graph">From Bayesian network to factor graph</a></li>
   </ul></li>
+  <li><a href="#what-a-factor-graph-actually-is" id="toc-what-a-factor-graph-actually-is" class="nav-link" data-scroll-target="#what-a-factor-graph-actually-is">What a Factor Graph Actually Is</a></li>
+  <li><a href="#types-of-factors" id="toc-types-of-factors" class="nav-link" data-scroll-target="#types-of-factors">Types of Factors</a></li>
+  <li><a href="#why-sparsity-matters" id="toc-why-sparsity-matters" class="nav-link" data-scroll-target="#why-sparsity-matters">Why Sparsity Matters</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content column-body" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html">Visualizing SLAM with Factor Graphs</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">ROBOTICS HANDBOOK</h1>
+<h1 class="title">Visualizing SLAM with Factor Graphs</h1>
 </div>
 
 
 
-<div class="quarto-title-meta column-body">
+<div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Sarvesh Khire </p>
-          </div>
-  </div>
     
   
     
@@ -426,42 +393,146 @@ window.Quarto = {
 </header>
 
 
-<section id="notes-on-robotics-fundamentals" class="level2">
-<h2 class="anchored" data-anchor-id="notes-on-robotics-fundamentals">Notes on Robotics Fundamentals</h2>
-<p>Concepts and mathematics from robotics, SLAM, and localization — written the way I wish someone had explained them to me.</p>
-<section id="slam" class="level3">
-<h3 class="anchored" data-anchor-id="slam">SLAM</h3>
-<div id="listing-slam-chapters" class="quarto-listing quarto-listing-container-grid">
-<div class="list grid quarto-listing-cols-3">
-<div class="g-col-1" data-index="0" data-listing-file-modified-sort="1783261052871" data-listing-reading-time-sort="1" data-listing-word-count-sort="174">
-<a href="./chapters/factor-graphs-slam/overview.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Overview
-</h5>
-</div>
-</div></a>
-</div>
-</div>
-<div class="listing-no-matching d-none">No matching items</div>
-</div>
+<section id="the-unknowns" class="level2">
+<h2 class="anchored" data-anchor-id="the-unknowns">The unknowns</h2>
+<p>We’re solving for a state vector containing both robot poses and landmarks:</p>
+<p><span class="math display">\[
+\mathbf{x} = \begin{bmatrix} P_1 \\ P_2 \\ P_3 \\ l_1 \\ l_2 \end{bmatrix}
+\]</span></p>
+<p>where <span class="math inline">\(P_i\)</span> are robot poses at different times and <span class="math inline">\(l_i\)</span> are landmark positions.</p>
 </section>
-<section id="localization" class="level3">
-<h3 class="anchored" data-anchor-id="localization">Localization</h3>
-<p><em>(coming soon)</em></p>
+<section id="known-vs.-unknown" class="level2">
+<h2 class="anchored" data-anchor-id="known-vs.-unknown">Known vs.&nbsp;unknown</h2>
+<p>The measurements are what’s “known” — but here’s the key idea that trips people up at first: <strong>every measurement carries uncertainty.</strong> A LiDAR scan doesn’t tell you “the wall is exactly 3.000m away.” It tells you “the wall is probably around 3m away, plus or minus some noise.”</p>
+<p>That uncertainty is <em>why</em> SLAM is fundamentally a probability problem, not a geometry problem.</p>
+<blockquote class="blockquote">
+<p><strong>The robot never knows — it only believes.</strong></p>
+</blockquote>
+<p>This isn’t just a nice turn of phrase — it’s the mathematical foundation of the whole field. The robot maintains a <em>belief</em>: a probability distribution over where it might be, not a single certain answer.</p>
 </section>
-<section id="mapping" class="level3">
-<h3 class="anchored" data-anchor-id="mapping">Mapping</h3>
-<p><em>(coming soon)</em></p>
+<section id="why-probabilities-must-sum-to-one" class="level2">
+<h2 class="anchored" data-anchor-id="why-probabilities-must-sum-to-one">Why probabilities must sum to one</h2>
+<p><span class="math display">\[
+\int p(x)\,dx = 1
+\]</span></p>
+<p>This says: all possibilities sum to 1. In plain terms — the robot <strong>must</strong> exist somewhere. Its belief might be spread out and uncertain, but that uncertainty is distributed over the full space of possibilities, and it always adds up to total certainty that <em>some</em> pose is the true one.</p>
+<p>This single constraint is what turns “the robot is confused about its position” into something we can actually compute with.</p>
 </section>
-<section id="navigation" class="level3">
-<h3 class="anchored" data-anchor-id="navigation">Navigation</h3>
-<p><em>(coming soon)</em></p>
+<section id="the-state-vector" class="level2">
+<h2 class="anchored" data-anchor-id="the-state-vector">The State Vector</h2>
+<p>Everything SLAM is trying to solve for lives in one big state vector, stacking robot poses and landmark positions together:</p>
+<p><span class="math display">\[
+\mathbf{x} = \begin{bmatrix} P_1 \\ P_2 \\ P_3 \\ l_1 \\ l_2 \end{bmatrix}
+\rightarrow
+\begin{bmatrix} x_1 \\ y_1 \\ \theta_1 \\ x_2 \\ y_2 \end{bmatrix}
+\]</span></p>
+<p>Each <strong>pose</strong> is <span class="math inline">\([x, y, \theta]\)</span>, and each <strong>landmark</strong> is <span class="math inline">\([x, y]\)</span>. Note that this is a <em>vector</em>, not a matrix — a flat list of all the unknowns concatenated together.</p>
+<p>This matters because it tells you how the optimization actually works: it doesn’t solve for the robot’s path first and then the map, or vice versa. It solves for <strong>every unknown at once</strong>, jointly.</p>
+</section>
+<section id="the-posterior-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="the-posterior-distribution">The Posterior Distribution</h2>
+<p>The quantity we actually care about is:</p>
+<p><span class="math display">\[
+p(x \mid z) \Rightarrow P(\text{pose} \mid \text{measurements})
+\]</span></p>
+<p>In words: given everything the sensors have measured, what’s the probability distribution over where the robot actually is (and where the landmarks actually are)?</p>
+</section>
+<section id="why-factor-graphs" class="level2">
+<h2 class="anchored" data-anchor-id="why-factor-graphs">Why Factor Graphs?</h2>
+<p>The core idea is deceptively simple: <strong>draw constraints as nodes.</strong> Instead of writing one huge joint probability expression, we represent each piece of evidence — each measurement, each motion step — as its own node in a graph. This turns an intractable-looking equation into something structured and sparse.</p>
+</section>
+<section id="bayesian-networks" class="level2">
+<h2 class="anchored" data-anchor-id="bayesian-networks">Bayesian Networks</h2>
+<p>Bayesian networks represent <strong>joint probability</strong> — but the trick is they don’t store it as one giant function. Instead, they exploit <strong>conditional independence</strong> to break it into small, manageable pieces.</p>
+<p>For example, take three variables <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, <span class="math inline">\(c\)</span>. If the dependency chain is <span class="math inline">\(A \to B \to C\)</span>, then instead of needing the full joint distribution, we can factor it as:</p>
+<p><span class="math display">\[
+P(a,b,c) = P(a) \cdot P(b \mid a) \cdot P(c \mid b)
+\]</span></p>
+<p>This is the whole reason factor graphs are tractable at all — most variables in SLAM don’t directly depend on most other variables, so we never need to compute anything close to the full joint distribution.</p>
+<section id="applying-this-to-our-state-vector" class="level3">
+<h3 class="anchored" data-anchor-id="applying-this-to-our-state-vector">Applying this to our state vector</h3>
+<p>The same logic applies directly to <span class="math inline">\(p(x \mid z)\)</span>. By Bayes’ rule:</p>
+<p><span class="math display">\[
+p(x \mid z) \propto p(z \mid x) \cdot p(x)
+\]</span></p>
+<p>Expanding over all our poses, landmarks, and measurements:</p>
+<p><span class="math display">\[
+\begin{aligned}
+p(x \mid z) \;\propto\;\; &amp; p(z_1,z_2,z_3,z_4 \mid P_1,P_2,P_3,l_1,l_2) \\
+&amp; \cdot\, p(P_1,P_2,P_3,l_1,l_2)
+\end{aligned}
+\]</span></p>
+<p>Given the dependency structure — where <span class="math inline">\(P_1 \to P_2 \to P_3\)</span> form the trajectory, and <span class="math inline">\(l_1, l_2\)</span> are landmarks observed at different points along it — this factors into:</p>
+<p><span class="math display">\[
+\begin{aligned}
+p(x \mid z) \;\propto\;\; &amp; p(P_1) \cdot p(l_1) \cdot p(l_2) \\
+&amp; \cdot\, p(P_2\mid P_1) \cdot p(P_3\mid P_2) \\
+&amp; \cdot\, p(z_1\mid P_1) \cdot p(z_2\mid P_1,l_1) \\
+&amp; \cdot\, p(z_3\mid P_2,l_1) \cdot p(z_4\mid P_3,l_2)
+\end{aligned}
+\]</span></p>
+<p>Every term in that product corresponds to one measurement or one motion step. Nothing here is arbitrary — it falls directly out of which variables were involved in producing which observation.</p>
+</section>
+<section id="from-bayesian-network-to-factor-graph" class="level3">
+<h3 class="anchored" data-anchor-id="from-bayesian-network-to-factor-graph">From Bayesian network to factor graph</h3>
+<p>Here’s the structure before and after the transformation:</p>
+<p><strong>Bayesian network</strong> (directed, showing dependency direction):</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../../images/bayesian_network1.png" class="img-fluid figure-img" width="500"></p>
+<figcaption>Bayesian network for SLAM: poses P1, P2, P3 in a chain, landmarks l1 and l2, and measurements z1 through z4</figcaption>
+</figure>
+</div>
+<p><strong>Factor graph</strong> (undirected, showing which variables a constraint touches):</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../../images/factor_graph_slam1.png" class="img-fluid figure-img" width="500"></p>
+<figcaption>Factor graph for SLAM: variable nodes P1, P2, P3, l1, l2 connected to factor nodes φ1 through φ9</figcaption>
+</figure>
+</div>
+<ul>
+<li>Unary factors (priors): <span class="math inline">\(\phi_1(P_1)\)</span>, <span class="math inline">\(\phi_4(l_1)\)</span>, <span class="math inline">\(\phi_5(l_2)\)</span></li>
+<li>Motion factors: <span class="math inline">\(\phi_2(P_2,P_1)\)</span>, <span class="math inline">\(\phi_3(P_3,P_2)\)</span></li>
+<li>Observation factors: <span class="math inline">\(\phi_6(P_1)\)</span>, <span class="math inline">\(\phi_7(P_1,l_1)\)</span>, <span class="math inline">\(\phi_8(P_2,l_1)\)</span>, <span class="math inline">\(\phi_9(P_3,l_2)\)</span></li>
+</ul>
+<p>The shift from Bayesian network to factor graph is really a shift in <em>what the nodes mean</em>. In the Bayesian network, arrows encode causal or conditional direction. In the factor graph, we drop the directionality and instead ask: which variables does this one constraint touch?</p>
+</section>
+</section>
+<section id="what-a-factor-graph-actually-is" class="level2">
+<h2 class="anchored" data-anchor-id="what-a-factor-graph-actually-is">What a Factor Graph Actually Is</h2>
+<blockquote class="blockquote">
+<p>A factor graph is a graph that represents the <strong>factorization of a function</strong>.</p>
+</blockquote>
+<p>A <strong>factor</strong> is just a function that says how compatible a set of variables is with one measurement. Every factor corresponds to one constraint — one measurement, one prior, one motion estimate.</p>
+<p>The graph has exactly two kinds of nodes:</p>
+<ul>
+<li><strong>Variable nodes</strong> (circles) — poses and landmarks, the things we’re solving for</li>
+<li><strong>Factor nodes</strong> (squares) — constraints, the evidence tying variables together</li>
+</ul>
+<p>Because edges only ever connect a variable node to a factor node (never variable-to-variable or factor-to-factor), this makes it a <strong>bipartite graph</strong>. That bipartite structure is what keeps the whole system sparse and efficient to optimize — most variables only touch a handful of factors, not all of them.</p>
+</section>
+<section id="types-of-factors" class="level2">
+<h2 class="anchored" data-anchor-id="types-of-factors">Types of Factors</h2>
+<p>Two flavors of constraint show up constantly in a factor graph:</p>
+<ul>
+<li><span class="math inline">\(\phi(P_1)\)</span> — a <strong>unary constraint</strong>, or <em>prior</em>. It involves just one variable, expressing a belief about it in isolation (e.g., “the robot starts near the origin”).</li>
+<li><span class="math inline">\(\phi(P_2, P_1)\)</span> — a <strong>binary constraint</strong>, or <em>between</em> factor. It ties two variables together (e.g., “the robot moved this much between these two poses”).</li>
+</ul>
+</section>
+<section id="why-sparsity-matters" class="level2">
+<h2 class="anchored" data-anchor-id="why-sparsity-matters">Why Sparsity Matters</h2>
+<p>Here’s the property that makes factor graphs practical at scale: they’re <strong>sparse</strong>. Most nodes never connect to each other. A landmark observed early in a trajectory has no direct relationship to a pose visited much later — they only become linked indirectly, through the chain of poses in between. This makes sparsity one of the most important properties of the whole system.</p>
+<p>Formally, a factor graph is a tuple:</p>
+<p><span class="math display">\[
+F = (U, V, E)
+\]</span></p>
+<p>where <span class="math inline">\(U\)</span> = factor nodes, <span class="math inline">\(V\)</span> = variable nodes, and <span class="math inline">\(E\)</span> = edges. The whole factorized function is just the product over all factors:</p>
+<p><span class="math display">\[
+\phi(x) = \prod_i \phi_i(x_i)
+\]</span></p>
+<p>This sparsity is why SLAM problems with thousands of poses and landmarks are still solvable in real time — the underlying linear systems end up being sparse matrices, and sparse solvers scale far better than dense ones.</p>
 
 
-
-</section>
 </section>
 
 </main> <!-- /main -->

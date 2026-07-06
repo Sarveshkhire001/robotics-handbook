@@ -14,25 +14,6 @@
     "text": "Concepts and mathematics from robotics, SLAM, and localization — written the way I wish someone had explained them to me.\n\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items\n\n\n\n\n(coming soon)\n\n\n\n(coming soon)\n\n\n\n(coming soon)"
   },
   {
-    "objectID": "chapters/factor-graphs-slam/notes.html",
-    "href": "chapters/factor-graphs-slam/notes.html",
-    "title": "Notes",
-    "section": "",
-    "text": "Content coming soon.",
-    "crumbs": [
-      "SLAM",
-      "Factor Graphs for SLAM",
-      "Notes"
-    ]
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
-    "section": "",
-    "text": "About this site"
-  },
-  {
     "objectID": "chapters/factor-graphs-slam/overview.html",
     "href": "chapters/factor-graphs-slam/overview.html",
     "title": "Overview",
@@ -69,15 +50,250 @@
     ]
   },
   {
-    "objectID": "chapters/factor-graphs-slam/overview.html#visualizing-slam-with-factor-graphs",
-    "href": "chapters/factor-graphs-slam/overview.html#visualizing-slam-with-factor-graphs",
-    "title": "Overview",
-    "section": "Visualizing SLAM with Factor Graphs",
-    "text": "Visualizing SLAM with Factor Graphs\n\nThe unknowns\nWe’re solving for a state vector containing both robot poses and landmarks:\n\\[\n\\mathbf{x} = \\begin{bmatrix} p_1 \\\\ p_2 \\\\ p_3 \\\\ l_1 \\\\ l_2 \\end{bmatrix}\n\\]\nwhere \\(p_i\\) are robot poses at different times and \\(l_i\\) are landmark positions.\n\n\nKnown vs. unknown\nThe measurements are what’s “known” — but here’s the key idea that trips people up at first: every measurement carries uncertainty. A LiDAR scan doesn’t tell you “the wall is exactly 3.000m away.” It tells you “the wall is probably around 3m away, plus or minus some noise.”\nThat uncertainty is why SLAM is fundamentally a probability problem, not a geometry problem.\n\nThe robot never knows — it only believes.\n\nThis isn’t just a nice turn of phrase — it’s the mathematical foundation of the whole field. The robot maintains a belief: a probability distribution over where it might be, not a single certain answer.\n\n\nWhy probabilities must sum to one\n\\[\n\\int p(x)\\,dx = 1\n\\]\nThis says: all possibilities sum to 1. In plain terms — the robot must exist somewhere. Its belief might be spread out and uncertain, but that uncertainty is distributed over the full space of possibilities, and it always adds up to total certainty that some pose is the true one.\nThis single constraint is what turns “the robot is confused about its position” into something we can actually compute with.",
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site"
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html",
+    "href": "chapters/factor-graphs-slam/least_squares.html",
+    "title": "Least Squares and MAP Estimation",
+    "section": "",
+    "text": "Here’s the reframing that makes SLAM computationally tractable:\n\nWhat is the most probable robot trajectory? is exactly equivalent to minimize the sum of squared errors.\n\nThat equivalence falls directly out of assuming Gaussian noise — we’ll derive it properly in a later section. For now, here’s the pipeline it sets up:\nMeasurements → Posterior → MAP estimate → Gaussian probability → negative log → Least squares → Gauss-Newton / Levenberg-Marquardt\n\n\nThe unknowns are the full state vector, and the measurements are whatever the sensors actually gave us:\n\\[\nx = \\begin{bmatrix} P_1 \\\\ P_2 \\\\ \\vdots \\\\ l_1 \\\\ l_2 \\\\ \\vdots \\end{bmatrix}\n\\qquad\nz = \\{z_1, z_2, \\dots, z_m\\}\n\\]\nThe goal: find the best value of \\(x\\) given \\(z\\) — in other words, maximize \\(p(x \\mid z)\\).",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Overview"
+      "Least Squares and MAP Estimation"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#least-squares",
+    "href": "chapters/factor-graphs-slam/least_squares.html#least-squares",
+    "title": "Least Squares and MAP Estimation",
+    "section": "",
+    "text": "Here’s the reframing that makes SLAM computationally tractable:\n\nWhat is the most probable robot trajectory? is exactly equivalent to minimize the sum of squared errors.\n\nThat equivalence falls directly out of assuming Gaussian noise — we’ll derive it properly in a later section. For now, here’s the pipeline it sets up:\nMeasurements → Posterior → MAP estimate → Gaussian probability → negative log → Least squares → Gauss-Newton / Levenberg-Marquardt\n\n\nThe unknowns are the full state vector, and the measurements are whatever the sensors actually gave us:\n\\[\nx = \\begin{bmatrix} P_1 \\\\ P_2 \\\\ \\vdots \\\\ l_1 \\\\ l_2 \\\\ \\vdots \\end{bmatrix}\n\\qquad\nz = \\{z_1, z_2, \\dots, z_m\\}\n\\]\nThe goal: find the best value of \\(x\\) given \\(z\\) — in other words, maximize \\(p(x \\mid z)\\).",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares and MAP Estimation"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#map-estimation",
+    "href": "chapters/factor-graphs-slam/least_squares.html#map-estimation",
+    "title": "Least Squares and MAP Estimation",
+    "section": "MAP Estimation",
+    "text": "MAP Estimation\nMAP stands for Maximum A Posteriori — we want the state whose posterior probability is highest:\n\\[\nx_{MAP} = \\operatorname*{argmax}_{x} \\; p(x \\mid z)\n\\]\n\nApplying Bayes’ theorem\nDirectly optimizing \\(p(x \\mid z)\\) is awkward, so we flip it using Bayes’ rule:\n\\[\nx_{MAP} = \\operatorname*{argmax}_{x} \\;\n\\underbrace{p(z \\mid x)}_{\\text{likelihood}} \\cdot\n\\underbrace{p(x)}_{\\text{prior}}\n\\]\nThese two terms have intuitive meanings:\n\nLikelihood \\(p(z \\mid x)\\) — does this candidate state actually explain the measurements we observed?\nPrior \\(p(x)\\) — is this state physically plausible in the first place?\n\nWe can drop \\(p(z)\\) entirely, since it doesn’t depend on \\(x\\) — it’s just a normalizing constant.\n\n\nRewriting with factors\nSince the posterior already factors into a product of \\(\\phi_i\\) terms (as we saw earlier), this becomes:\n\\[\nx_{MAP} = \\operatorname*{argmax}_{x} \\; \\prod_i \\phi_i(x_i)\n\\]\nNothing has changed mathematically — we’ve just rewritten the same optimization in terms of factors. But this is the general MAP problem, and it’s exactly the form every SLAM backend is actually solving.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares and MAP Estimation"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#modeling-measurement-noise",
+    "href": "chapters/factor-graphs-slam/least_squares.html#modeling-measurement-noise",
+    "title": "Least Squares and MAP Estimation",
+    "section": "Modeling Measurement Noise",
+    "text": "Modeling Measurement Noise\nEvery real sensor measurement is a mix of a true underlying signal and noise. We model this as:\n\\[\nz = h(x) + \\eta\n\\]\n\n\\(h(x)\\) is the prediction function — it comes from pure geometry and physics, with no randomness involved.\n\\(\\eta\\) is the noise, assumed Gaussian: \\(\\eta \\sim \\mathcal{N}(0, \\Sigma)\\).\n\nThat Gaussian assumption on the noise is doing a lot of work here — it’s what eventually lets “most probable trajectory” collapse into “minimize sum of squared errors.”\nGiven this noise model, the probability of observing \\(z\\) given a state \\(x\\) is:\n\\[\np(z \\mid x) = \\mathcal{N}(z;\\, h(x), \\Sigma)\n\\]\nExpanding the Gaussian density explicitly:\n\\[\np(z \\mid x) = \\frac{1}{\\sqrt{2\\pi\\Sigma}}\n\\exp\\left(-\\frac{1}{2} [z - h(x)]^T \\Sigma^{-1} [z - h(x)]\\right)\n\\]",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares and MAP Estimation"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#reading-the-pieces",
+    "href": "chapters/factor-graphs-slam/least_squares.html#reading-the-pieces",
+    "title": "Least Squares and MAP Estimation",
+    "section": "Reading the Pieces",
+    "text": "Reading the Pieces\n\n\\(z - h(x)\\) is the residual: actual measurement minus predicted measurement. It’s a direct measure of how wrong our current estimate is.\nInside the exponent we have the squared residual, weighted by \\(\\Sigma^{-1}\\).\n\\(\\Sigma\\) embeds the noise — it’s the covariance of the measurement.\n\\(\\Sigma^{-1}\\) is called the information matrix, since it tells us how much confidence we place in this measurement (a tighter covariance means more information).",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares and MAP Estimation"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#the-mahalanobis-distance",
+    "href": "chapters/factor-graphs-slam/least_squares.html#the-mahalanobis-distance",
+    "title": "Least Squares and MAP Estimation",
+    "section": "The Mahalanobis Distance",
+    "text": "The Mahalanobis Distance\nThe weighted squared residual has a name:\n\\[\n[z - h(x)]^T \\Sigma^{-1} [z - h(x)] = \\text{Mahalanobis distance squared}\n\\]\nUnlike ordinary Euclidean distance, Mahalanobis distance accounts for how uncertain each dimension of the measurement is — a large deviation in a noisy direction counts for less than the same deviation in a precise direction. We give it its own compact notation:\n\\[\n\\|e\\|^2_\\Sigma = e^T \\Sigma^{-1} e\n\\]\nThis is exactly the quantity each factor in a SLAM problem is scoring.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares and MAP Estimation"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#putting-the-factors-together",
+    "href": "chapters/factor-graphs-slam/least_squares.html#putting-the-factors-together",
+    "title": "Least Squares and MAP Estimation",
+    "section": "Putting the Factors Together",
+    "text": "Putting the Factors Together\nRecall the MAP objective in terms of factors:\n\\[\nx_{MAP} = \\operatorname*{argmax}_{x} \\; \\prod_i \\phi_i(x_i)\n\\]\nGiven the Gaussian noise model, each factor takes the form:\n\\[\n\\phi_i(x_i) \\propto \\exp\\left(-\\frac{1}{2} \\|z_i - h_i(x_i)\\|^2_{\\Sigma_i}\\right)\n\\]\nwhich we can write more compactly as:\n\\[\n\\phi_i(x_i) = c_i \\cdot e^{-E_i}\n\\]\nwhere \\(E_i = \\frac{1}{2}\\|z_i - h_i(x_i)\\|^2_{\\Sigma_i}\\) is the weighted squared error for factor \\(i\\).",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares and MAP Estimation"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#the-product-problem",
+    "href": "chapters/factor-graphs-slam/least_squares.html#the-product-problem",
+    "title": "Least Squares and MAP Estimation",
+    "section": "The Product Problem",
+    "text": "The Product Problem\nHere’s a practical issue: the MAP objective is a product of many exponential terms:\n\\[\nx_{MAP} \\to \\exp(-a) \\cdot \\exp(-b) \\cdot \\exp(-c) \\cdots\n\\]\nOptimizers don’t work well with long products — products of many small numbers underflow numerically, and their derivatives get messy. The fix is to take logarithms, which turns the product into a sum:\n\\[\n\\begin{aligned}\n\\prod_i \\exp(-E_i)\n\\;\\longrightarrow\\;\n& \\log\\left(\\prod_i \\exp(-E_i)\\right) \\\\\n\\;\\longrightarrow\\;\n& \\sum_i \\log(\\exp(-E_i)) \\\\\n\\;\\longrightarrow\\;\n& \\sum_i (-E_i)\n\\end{aligned}\n\\]\nSince \\(\\log\\) is monotonic, maximizing the product is equivalent to maximizing the log-sum. And flipping the sign turns a maximization into a minimization:\n\\[\n\\operatorname*{argmax}\\left(-\\sum_i E_i\\right)\n= \\operatorname*{argmin}\\left(\\sum_i E_i\\right)\n\\]\nThis is the final piece connecting everything: maximizing the posterior probability is exactly equivalent to minimizing a sum of weighted squared residuals — which is precisely the least-squares objective we started with back in the Least Squares section.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares and MAP Estimation"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#from-map-to-a-concrete-optimization-problem",
+    "href": "chapters/factor-graphs-slam/least_squares.html#from-map-to-a-concrete-optimization-problem",
+    "title": "Least Squares and MAP Estimation",
+    "section": "From MAP to a Concrete Optimization Problem",
+    "text": "From MAP to a Concrete Optimization Problem\nTaking the MAP formulation and working through the Gaussian noise assumption from the previous section eventually lands us here:\n\\[\nx_{MAP} = \\operatorname*{argmin}_{x} \\sum_i \\| z_i - h_i(x_i) \\|^2_{\\Sigma_i}\n\\quad \\to \\quad \\text{Least squares}\n\\]\nThis is a least squares problem. But there’s a catch: \\(h_i(x)\\) — the function that predicts a measurement from a state — is generally a non-linear function of the state. Bearing angles, ranges, rotations: none of these are linear in \\(x\\). So what we actually have is a non-linear least squares problem.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares and MAP Estimation"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html",
+    "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html",
+    "title": "Visualizing SLAM with Factor Graphs",
+    "section": "",
+    "text": "We’re solving for a state vector containing both robot poses and landmarks:\n\\[\n\\mathbf{x} = \\begin{bmatrix} P_1 \\\\ P_2 \\\\ P_3 \\\\ l_1 \\\\ l_2 \\end{bmatrix}\n\\]\nwhere \\(P_i\\) are robot poses at different times and \\(l_i\\) are landmark positions.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Visualizing SLAM with Factor Graphs"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#the-unknowns",
+    "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#the-unknowns",
+    "title": "Visualizing SLAM with Factor Graphs",
+    "section": "",
+    "text": "We’re solving for a state vector containing both robot poses and landmarks:\n\\[\n\\mathbf{x} = \\begin{bmatrix} P_1 \\\\ P_2 \\\\ P_3 \\\\ l_1 \\\\ l_2 \\end{bmatrix}\n\\]\nwhere \\(P_i\\) are robot poses at different times and \\(l_i\\) are landmark positions.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Visualizing SLAM with Factor Graphs"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#known-vs.-unknown",
+    "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#known-vs.-unknown",
+    "title": "Visualizing SLAM with Factor Graphs",
+    "section": "Known vs. unknown",
+    "text": "Known vs. unknown\nThe measurements are what’s “known” — but here’s the key idea that trips people up at first: every measurement carries uncertainty. A LiDAR scan doesn’t tell you “the wall is exactly 3.000m away.” It tells you “the wall is probably around 3m away, plus or minus some noise.”\nThat uncertainty is why SLAM is fundamentally a probability problem, not a geometry problem.\n\nThe robot never knows — it only believes.\n\nThis isn’t just a nice turn of phrase — it’s the mathematical foundation of the whole field. The robot maintains a belief: a probability distribution over where it might be, not a single certain answer.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Visualizing SLAM with Factor Graphs"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-probabilities-must-sum-to-one",
+    "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-probabilities-must-sum-to-one",
+    "title": "Visualizing SLAM with Factor Graphs",
+    "section": "Why probabilities must sum to one",
+    "text": "Why probabilities must sum to one\n\\[\n\\int p(x)\\,dx = 1\n\\]\nThis says: all possibilities sum to 1. In plain terms — the robot must exist somewhere. Its belief might be spread out and uncertain, but that uncertainty is distributed over the full space of possibilities, and it always adds up to total certainty that some pose is the true one.\nThis single constraint is what turns “the robot is confused about its position” into something we can actually compute with.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Visualizing SLAM with Factor Graphs"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#the-state-vector",
+    "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#the-state-vector",
+    "title": "Visualizing SLAM with Factor Graphs",
+    "section": "The State Vector",
+    "text": "The State Vector\nEverything SLAM is trying to solve for lives in one big state vector, stacking robot poses and landmark positions together:\n\\[\n\\mathbf{x} = \\begin{bmatrix} P_1 \\\\ P_2 \\\\ P_3 \\\\ l_1 \\\\ l_2 \\end{bmatrix}\n\\rightarrow\n\\begin{bmatrix} x_1 \\\\ y_1 \\\\ \\theta_1 \\\\ x_2 \\\\ y_2 \\end{bmatrix}\n\\]\nEach pose is \\([x, y, \\theta]\\), and each landmark is \\([x, y]\\). Note that this is a vector, not a matrix — a flat list of all the unknowns concatenated together.\nThis matters because it tells you how the optimization actually works: it doesn’t solve for the robot’s path first and then the map, or vice versa. It solves for every unknown at once, jointly.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Visualizing SLAM with Factor Graphs"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#the-posterior-distribution",
+    "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#the-posterior-distribution",
+    "title": "Visualizing SLAM with Factor Graphs",
+    "section": "The Posterior Distribution",
+    "text": "The Posterior Distribution\nThe quantity we actually care about is:\n\\[\np(x \\mid z) \\Rightarrow P(\\text{pose} \\mid \\text{measurements})\n\\]\nIn words: given everything the sensors have measured, what’s the probability distribution over where the robot actually is (and where the landmarks actually are)?",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Visualizing SLAM with Factor Graphs"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-factor-graphs",
+    "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-factor-graphs",
+    "title": "Visualizing SLAM with Factor Graphs",
+    "section": "Why Factor Graphs?",
+    "text": "Why Factor Graphs?\nThe core idea is deceptively simple: draw constraints as nodes. Instead of writing one huge joint probability expression, we represent each piece of evidence — each measurement, each motion step — as its own node in a graph. This turns an intractable-looking equation into something structured and sparse.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Visualizing SLAM with Factor Graphs"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#bayesian-networks",
+    "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#bayesian-networks",
+    "title": "Visualizing SLAM with Factor Graphs",
+    "section": "Bayesian Networks",
+    "text": "Bayesian Networks\nBayesian networks represent joint probability — but the trick is they don’t store it as one giant function. Instead, they exploit conditional independence to break it into small, manageable pieces.\nFor example, take three variables \\(a\\), \\(b\\), \\(c\\). If the dependency chain is \\(A \\to B \\to C\\), then instead of needing the full joint distribution, we can factor it as:\n\\[\nP(a,b,c) = P(a) \\cdot P(b \\mid a) \\cdot P(c \\mid b)\n\\]\nThis is the whole reason factor graphs are tractable at all — most variables in SLAM don’t directly depend on most other variables, so we never need to compute anything close to the full joint distribution.\n\nApplying this to our state vector\nThe same logic applies directly to \\(p(x \\mid z)\\). By Bayes’ rule:\n\\[\np(x \\mid z) \\propto p(z \\mid x) \\cdot p(x)\n\\]\nExpanding over all our poses, landmarks, and measurements:\n\\[\n\\begin{aligned}\np(x \\mid z) \\;\\propto\\;\\; & p(z_1,z_2,z_3,z_4 \\mid P_1,P_2,P_3,l_1,l_2) \\\\\n& \\cdot\\, p(P_1,P_2,P_3,l_1,l_2)\n\\end{aligned}\n\\]\nGiven the dependency structure — where \\(P_1 \\to P_2 \\to P_3\\) form the trajectory, and \\(l_1, l_2\\) are landmarks observed at different points along it — this factors into:\n\\[\n\\begin{aligned}\np(x \\mid z) \\;\\propto\\;\\; & p(P_1) \\cdot p(l_1) \\cdot p(l_2) \\\\\n& \\cdot\\, p(P_2\\mid P_1) \\cdot p(P_3\\mid P_2) \\\\\n& \\cdot\\, p(z_1\\mid P_1) \\cdot p(z_2\\mid P_1,l_1) \\\\\n& \\cdot\\, p(z_3\\mid P_2,l_1) \\cdot p(z_4\\mid P_3,l_2)\n\\end{aligned}\n\\]\nEvery term in that product corresponds to one measurement or one motion step. Nothing here is arbitrary — it falls directly out of which variables were involved in producing which observation.\n\n\nFrom Bayesian network to factor graph\nHere’s the structure before and after the transformation:\nBayesian network (directed, showing dependency direction):\n\n\n\nBayesian network for SLAM: poses P1, P2, P3 in a chain, landmarks l1 and l2, and measurements z1 through z4\n\n\nFactor graph (undirected, showing which variables a constraint touches):\n\n\n\nFactor graph for SLAM: variable nodes P1, P2, P3, l1, l2 connected to factor nodes φ1 through φ9\n\n\n\nUnary factors (priors): \\(\\phi_1(P_1)\\), \\(\\phi_4(l_1)\\), \\(\\phi_5(l_2)\\)\nMotion factors: \\(\\phi_2(P_2,P_1)\\), \\(\\phi_3(P_3,P_2)\\)\nObservation factors: \\(\\phi_6(P_1)\\), \\(\\phi_7(P_1,l_1)\\), \\(\\phi_8(P_2,l_1)\\), \\(\\phi_9(P_3,l_2)\\)\n\nThe shift from Bayesian network to factor graph is really a shift in what the nodes mean. In the Bayesian network, arrows encode causal or conditional direction. In the factor graph, we drop the directionality and instead ask: which variables does this one constraint touch?",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Visualizing SLAM with Factor Graphs"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#what-a-factor-graph-actually-is",
+    "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#what-a-factor-graph-actually-is",
+    "title": "Visualizing SLAM with Factor Graphs",
+    "section": "What a Factor Graph Actually Is",
+    "text": "What a Factor Graph Actually Is\n\nA factor graph is a graph that represents the factorization of a function.\n\nA factor is just a function that says how compatible a set of variables is with one measurement. Every factor corresponds to one constraint — one measurement, one prior, one motion estimate.\nThe graph has exactly two kinds of nodes:\n\nVariable nodes (circles) — poses and landmarks, the things we’re solving for\nFactor nodes (squares) — constraints, the evidence tying variables together\n\nBecause edges only ever connect a variable node to a factor node (never variable-to-variable or factor-to-factor), this makes it a bipartite graph. That bipartite structure is what keeps the whole system sparse and efficient to optimize — most variables only touch a handful of factors, not all of them.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Visualizing SLAM with Factor Graphs"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#types-of-factors",
+    "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#types-of-factors",
+    "title": "Visualizing SLAM with Factor Graphs",
+    "section": "Types of Factors",
+    "text": "Types of Factors\nTwo flavors of constraint show up constantly in a factor graph:\n\n\\(\\phi(P_1)\\) — a unary constraint, or prior. It involves just one variable, expressing a belief about it in isolation (e.g., “the robot starts near the origin”).\n\\(\\phi(P_2, P_1)\\) — a binary constraint, or between factor. It ties two variables together (e.g., “the robot moved this much between these two poses”).",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Visualizing SLAM with Factor Graphs"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-sparsity-matters",
+    "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-sparsity-matters",
+    "title": "Visualizing SLAM with Factor Graphs",
+    "section": "Why Sparsity Matters",
+    "text": "Why Sparsity Matters\nHere’s the property that makes factor graphs practical at scale: they’re sparse. Most nodes never connect to each other. A landmark observed early in a trajectory has no direct relationship to a pose visited much later — they only become linked indirectly, through the chain of poses in between. This makes sparsity one of the most important properties of the whole system.\nFormally, a factor graph is a tuple:\n\\[\nF = (U, V, E)\n\\]\nwhere \\(U\\) = factor nodes, \\(V\\) = variable nodes, and \\(E\\) = edges. The whole factorized function is just the product over all factors:\n\\[\n\\phi(x) = \\prod_i \\phi_i(x_i)\n\\]\nThis sparsity is why SLAM problems with thousands of poses and landmarks are still solvable in real time — the underlying linear systems end up being sparse matrices, and sparse solvers scale far better than dense ones.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Visualizing SLAM with Factor Graphs"
     ]
   }
 ]

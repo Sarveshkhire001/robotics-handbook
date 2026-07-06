@@ -329,8 +329,14 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../chapters/factor-graphs-slam/notes.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Notes</span></a>
+  <a href="../../chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Visualizing SLAM with Factor Graphs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/factor-graphs-slam/least_squares.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Least Squares and MAP Estimation</span></a>
   </div>
 </li>
       </ul>
@@ -349,12 +355,6 @@ window.Quarto = {
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
   <li><a href="#the-two-halves-of-slam" id="toc-the-two-halves-of-slam" class="nav-link" data-scroll-target="#the-two-halves-of-slam">The Two Halves of SLAM</a></li>
-  <li><a href="#visualizing-slam-with-factor-graphs" id="toc-visualizing-slam-with-factor-graphs" class="nav-link" data-scroll-target="#visualizing-slam-with-factor-graphs">Visualizing SLAM with Factor Graphs</a>
-  <ul class="collapse">
-  <li><a href="#the-unknowns" id="toc-the-unknowns" class="nav-link" data-scroll-target="#the-unknowns">The unknowns</a></li>
-  <li><a href="#known-vs.-unknown" id="toc-known-vs.-unknown" class="nav-link" data-scroll-target="#known-vs.-unknown">Known vs.&nbsp;unknown</a></li>
-  <li><a href="#why-probabilities-must-sum-to-one" id="toc-why-probabilities-must-sum-to-one" class="nav-link" data-scroll-target="#why-probabilities-must-sum-to-one">Why probabilities must sum to one</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
@@ -430,36 +430,8 @@ window.Quarto = {
 <p><span class="math display">\[
 \text{EKF SLAM} \rightarrow \text{Square Root SLAM} \rightarrow \text{Factor Graph SLAM}
 \]</span></p>
-</section>
-<section id="visualizing-slam-with-factor-graphs" class="level2">
-<h2 class="anchored" data-anchor-id="visualizing-slam-with-factor-graphs">Visualizing SLAM with Factor Graphs</h2>
-<section id="the-unknowns" class="level3">
-<h3 class="anchored" data-anchor-id="the-unknowns">The unknowns</h3>
-<p>We’re solving for a state vector containing both robot poses and landmarks:</p>
-<p><span class="math display">\[
-\mathbf{x} = \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ l_1 \\ l_2 \end{bmatrix}
-\]</span></p>
-<p>where <span class="math inline">\(p_i\)</span> are robot poses at different times and <span class="math inline">\(l_i\)</span> are landmark positions.</p>
-</section>
-<section id="known-vs.-unknown" class="level3">
-<h3 class="anchored" data-anchor-id="known-vs.-unknown">Known vs.&nbsp;unknown</h3>
-<p>The measurements are what’s “known” — but here’s the key idea that trips people up at first: <strong>every measurement carries uncertainty.</strong> A LiDAR scan doesn’t tell you “the wall is exactly 3.000m away.” It tells you “the wall is probably around 3m away, plus or minus some noise.”</p>
-<p>That uncertainty is <em>why</em> SLAM is fundamentally a probability problem, not a geometry problem.</p>
-<blockquote class="blockquote">
-<p><strong>The robot never knows — it only believes.</strong></p>
-</blockquote>
-<p>This isn’t just a nice turn of phrase — it’s the mathematical foundation of the whole field. The robot maintains a <em>belief</em>: a probability distribution over where it might be, not a single certain answer.</p>
-</section>
-<section id="why-probabilities-must-sum-to-one" class="level3">
-<h3 class="anchored" data-anchor-id="why-probabilities-must-sum-to-one">Why probabilities must sum to one</h3>
-<p><span class="math display">\[
-\int p(x)\,dx = 1
-\]</span></p>
-<p>This says: all possibilities sum to 1. In plain terms — the robot <strong>must</strong> exist somewhere. Its belief might be spread out and uncertain, but that uncertainty is distributed over the full space of possibilities, and it always adds up to total certainty that <em>some</em> pose is the true one.</p>
-<p>This single constraint is what turns “the robot is confused about its position” into something we can actually compute with.</p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -549,7 +521,7 @@ window.Quarto = {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/Sarveshkhire001\.github\.io\/robotics-handbook\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
