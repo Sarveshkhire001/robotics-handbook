@@ -1,0 +1,217 @@
+---
+title: "Least Squares and MAP Estimation"
+---
+
+## Least Squares
+
+Here's the reframing that makes SLAM computationally tractable:
+
+> **What is the most probable robot trajectory?** is exactly equivalent
+> to **minimize the sum of squared errors.**
+
+That equivalence falls directly out of assuming Gaussian noise — we'll
+derive it properly in a later section. For now, here's the pipeline it
+sets up:
+
+**Measurements → Posterior → MAP estimate → Gaussian probability →
+negative log → Least squares → Gauss-Newton / Levenberg-Marquardt**
+
+### Setting up the unknowns
+
+The unknowns are the full state vector, and the measurements are
+whatever the sensors actually gave us:
+
+$$
+x = \begin{bmatrix} P_1 \\ P_2 \\ \vdots \\ l_1 \\ l_2 \\ \vdots \end{bmatrix}
+\qquad
+z = \{z_1, z_2, \dots, z_m\}
+$$
+
+**The goal:** find the best value of $x$ given $z$ — in other words,
+maximize $p(x \mid z)$.
+
+## MAP Estimation
+
+MAP stands for *Maximum A Posteriori* — we want the state whose
+posterior probability is highest:
+
+$$
+x_{MAP} = \operatorname*{argmax}_{x} \; p(x \mid z)
+$$
+
+### Applying Bayes' theorem
+
+Directly optimizing $p(x \mid z)$ is awkward, so we flip it using
+Bayes' rule:
+
+$$
+x_{MAP} = \operatorname*{argmax}_{x} \;
+\underbrace{p(z \mid x)}_{\text{likelihood}} \cdot
+\underbrace{p(x)}_{\text{prior}}
+$$
+
+These two terms have intuitive meanings:
+
+- **Likelihood** $p(z \mid x)$ — does this candidate state actually
+  explain the measurements we observed?
+- **Prior** $p(x)$ — is this state physically plausible in the first
+  place?
+
+We can drop $p(z)$ entirely, since it doesn't depend on $x$ — it's just
+a normalizing constant.
+
+### Rewriting with factors
+
+Since the posterior already factors into a product of $\phi_i$ terms
+(as we saw earlier), this becomes:
+
+$$
+x_{MAP} = \operatorname*{argmax}_{x} \; \prod_i \phi_i(x_i)
+$$
+
+Nothing has changed mathematically — we've just rewritten the same
+optimization in terms of factors. But this is the **general MAP
+problem**, and it's exactly the form every SLAM backend is actually
+solving.
+
+## Modeling Measurement Noise
+
+Every real sensor measurement is a mix of a true underlying signal and
+noise. We model this as:
+
+$$
+z = h(x) + \eta
+$$
+
+- $h(x)$ is the **prediction function** — it comes from pure geometry
+  and physics, with no randomness involved.
+- $\eta$ is the **noise**, assumed Gaussian: $\eta \sim \mathcal{N}(0, \Sigma)$.
+
+That Gaussian assumption on the noise is doing a lot of work here — it's
+what eventually lets "most probable trajectory" collapse into "minimize
+sum of squared errors."
+
+Given this noise model, the probability of observing $z$ given a state
+$x$ is:
+
+$$
+p(z \mid x) = \mathcal{N}(z;\, h(x), \Sigma)
+$$
+
+Expanding the Gaussian density explicitly:
+
+$$
+p(z \mid x) = \frac{1}{\sqrt{2\pi\Sigma}}
+\exp\left(-\frac{1}{2} [z - h(x)]^T \Sigma^{-1} [z - h(x)]\right)
+$$
+
+## Reading the Pieces
+
+- $z - h(x)$ is the **residual**: actual measurement minus predicted
+  measurement. It's a direct measure of *how wrong our current estimate
+  is*.
+- Inside the exponent we have the **squared residual**, weighted by
+  $\Sigma^{-1}$.
+- $\Sigma$ embeds the noise — it's the **covariance** of the
+  measurement.
+- $\Sigma^{-1}$ is called the **information matrix**, since it tells us
+  how much confidence we place in this measurement (a tighter
+  covariance means more information).
+
+## The Mahalanobis Distance
+
+The weighted squared residual has a name:
+
+$$
+[z - h(x)]^T \Sigma^{-1} [z - h(x)] = \text{Mahalanobis distance squared}
+$$
+
+Unlike ordinary Euclidean distance, Mahalanobis distance accounts for
+*how uncertain* each dimension of the measurement is — a large
+deviation in a noisy direction counts for less than the same deviation
+in a precise direction. We give it its own compact notation:
+
+$$
+\|e\|^2_\Sigma = e^T \Sigma^{-1} e
+$$
+
+This is exactly the quantity each factor in a SLAM problem is scoring.
+
+## Putting the Factors Together
+
+Recall the MAP objective in terms of factors:
+
+$$
+x_{MAP} = \operatorname*{argmax}_{x} \; \prod_i \phi_i(x_i)
+$$
+
+Given the Gaussian noise model, each factor takes the form:
+
+$$
+\phi_i(x_i) \propto \exp\left(-\frac{1}{2} \|z_i - h_i(x_i)\|^2_{\Sigma_i}\right)
+$$
+
+which we can write more compactly as:
+
+$$
+\phi_i(x_i) = c_i \cdot e^{-E_i}
+$$
+
+where $E_i = \frac{1}{2}\|z_i - h_i(x_i)\|^2_{\Sigma_i}$ is the
+weighted squared error for factor $i$.
+
+## The Product Problem
+
+Here's a practical issue: the MAP objective is a **product** of many
+exponential terms:
+
+$$
+x_{MAP} \to \exp(-a) \cdot \exp(-b) \cdot \exp(-c) \cdots
+$$
+
+Optimizers don't work well with long products — products of many small
+numbers underflow numerically, and their derivatives get messy. The fix
+is to **take logarithms**, which turns the product into a sum:
+
+$$
+\begin{aligned}
+\prod_i \exp(-E_i)
+\;\longrightarrow\;
+& \log\left(\prod_i \exp(-E_i)\right) \\
+\;\longrightarrow\;
+& \sum_i \log(\exp(-E_i)) \\
+\;\longrightarrow\;
+& \sum_i (-E_i)
+\end{aligned}
+$$
+
+Since $\log$ is monotonic, maximizing the product is equivalent to
+maximizing the log-sum. And flipping the sign turns a maximization into
+a minimization:
+
+$$
+\operatorname*{argmax}\left(-\sum_i E_i\right)
+= \operatorname*{argmin}\left(\sum_i E_i\right)
+$$
+
+This is the final piece connecting everything: **maximizing the
+posterior probability is exactly equivalent to minimizing a sum of
+weighted squared residuals** — which is precisely the least-squares
+objective we started with back in the [Least Squares](#least-squares)
+section.
+
+## From MAP to a Concrete Optimization Problem
+
+Taking the MAP formulation and working through the Gaussian noise
+assumption from the previous section eventually lands us here:
+
+$$
+x_{MAP} = \operatorname*{argmin}_{x} \sum_i \| z_i - h_i(x_i) \|^2_{\Sigma_i}
+\quad \to \quad \text{Least squares}
+$$
+
+This is a **least squares** problem. But there's a catch: $h_i(x)$ — the
+function that predicts a measurement from a state — is generally a
+**non-linear function** of the state. Bearing angles, ranges, rotations:
+none of these are linear in $x$. So what we actually have is a
+**non-linear least squares** problem.

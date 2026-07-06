@@ -12,7 +12,8 @@ website:
           - section: "Factor Graphs for SLAM"
             contents:
               - chapters/factor-graphs-slam/overview.qmd
-              - chapters/factor-graphs-slam/notes.qmd
+              - chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.qmd
+              - chapters/factor-graphs-slam/least_squares.qmd
 
 format:
   html:
