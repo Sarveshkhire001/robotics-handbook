@@ -1,0 +1,322 @@
+---
+title: "Linearization & Whitening"
+---
+
+## The Iterative Recipe
+
+Solving a non-linear problem numerically comes down to five repeated
+steps — this is the gist of Gauss-Newton / LM:
+
+1. Linearize the non-linear residuals
+2. Form a large sparse linear system
+3. Solve for a small update $\delta$
+4. Update the state
+5. Repeat until convergence
+
+At a higher level, the whole pipeline looks like:
+
+**Non-linear problem → Taylor expansion → linear least squares → normal
+equations → solve via Cholesky/QR → update state → repeat**
+
+The one idea underlying all of it: **approximate the non-linear function
+locally with a straight line**, solve that easy linear problem, then
+re-linearize around the new estimate and repeat. Each iteration gets
+closer to the true non-linear optimum.
+
+## Linearizing the Cost Function
+
+### Taylor Expansion, the Engine Behind It All
+
+The linearization step comes straight from a first-order Taylor
+expansion:
+
+$$
+h_i(x_i) = h_i(x_i^0 + \delta_i) \approx h_i(x_i^0) + H_i \delta_i
+$$
+
+### A Simple (Linear) Warm-Up Example
+
+Before applying this to something genuinely non-linear, it helps to see
+the mechanics on something simple. Take $f(x) = x^2$ with a current
+estimate $x_0 = 2$:
+
+$$
+f(x) = f(x_0) + f'(x_0)(x - x_0) + \dots \quad \text{(ignoring higher-order terms)}
+$$
+
+$$
+f(x) \approx f(x_0) + f'(x_0)(x - x_0)
+$$
+
+Substituting $x_0 = 2$, so $f(x_0) = 4$ and $f'(x_0) = 4$:
+
+$$
+f(x) \approx 4 + 4(x - 2)
+$$
+
+That's just the tangent line at $x_0$ — a linear stand-in for the true
+curve, valid near $x_0$.
+
+### The Key Mental Shift: Optimize $\delta$, Not $x$
+
+This is the part that trips people up initially: **we don't optimize
+$x$ directly — we optimize $\delta$**, the *correction* to our current
+estimate:
+
+$$
+\delta = x - x_0
+$$
+
+This is easier to optimize because, near $x_0$, the problem becomes
+linear in $\delta$. Once we solve for $\delta$, we simply update
+$x \leftarrow x_0 + \delta$ and repeat the whole process at the new
+estimate.
+
+### The Jacobian
+
+The matrix $H_i$ appearing in the linearization is the **Jacobian**:
+
+$$
+H_i = \frac{\partial h_i}{\partial x_i} \; \text{evaluated at } x_i^0
+$$
+
+::: {.callout-tip}
+## Intuition
+
+**Jacobian = a local sensitivity of the measurement to each unknown
+variable.** Each entry of $H_i$ just answers: *if I nudge this one
+unknown a tiny bit, how much does the predicted measurement move?*
+:::
+
+**Worked example:** suppose the unknowns are a pose and a landmark
+position:
+
+$$
+x = \begin{bmatrix} x_P \\ y_P \\ \theta_P \\ x_l \\ y_l \end{bmatrix}
+\qquad
+h(P, l) = \operatorname{atan2}(y_l - y_P,\; x_l - x_P)
+$$
+
+Then the Jacobian is a row vector, one partial derivative per unknown:
+
+$$
+H = \begin{bmatrix} \dfrac{\partial h}{\partial x_P} & \dfrac{\partial h}{\partial y_P} & \dfrac{\partial h}{\partial \theta_P} & \dfrac{\partial h}{\partial x_l} & \dfrac{\partial h}{\partial y_l} \end{bmatrix}
+$$
+
+Each column corresponds to one equation's sensitivity to one unknown —
+stack these rows across all measurements and you get the full Jacobian
+matrix used in the linear system each iteration solves.
+
+### Substituting the Linearization Back In
+
+Plugging the Taylor expansion back into the least squares cost:
+
+$$
+\sum_i \| z_i - h_i(x_i) \|^2 = \sum_i \| z_i - h_i(x_i^0) - H_i \delta_i \|^2
+$$
+
+The problem is now **linear**. This is the whole point of linearizing —
+the unknown $\delta$ only appears inside the term $H_i \delta_i$, and
+that's exactly the form ($H\delta$) that linear algebra knows how to
+solve directly: a vector/matrix product.
+
+## Whitening the Residuals
+
+Right now each factor's cost still carries its covariance-weighted norm:
+
+$$
+\|e\|^2_\Sigma = e^T \Sigma^{-1} e
+$$
+
+The idea behind **whitening** is to fold that covariance weighting
+directly into the residual, so we're left with an ordinary (unweighted)
+squared norm — the standard form every least-squares solver expects.
+
+Splitting $\Sigma^{-1}$ into two symmetric square-root factors:
+
+$$
+e^T \Sigma^{-1} e = e^T \left(\Sigma^{-\frac{1}{2}}\right)^T \Sigma^{-\frac{1}{2}} e = \left(\Sigma^{-\frac{1}{2}} e\right)^T \left(\Sigma^{-\frac{1}{2}} e\right)
+$$
+
+$$
+\therefore \; \|e\|^2_\Sigma = \left\| \Sigma^{-\frac{1}{2}} e \right\|^2
+$$
+
+In other words: instead of weighting the *norm*, we can just rescale
+the *residual itself* by $\Sigma^{-\frac{1}{2}}$, and then take a plain
+Euclidean norm. That rescaling is the "whitening" — it stretches or
+shrinks each residual dimension according to how much we trust it, so a
+highly uncertain measurement contributes less to the final cost.
+
+Applying this to our linearized residual:
+
+$$
+\left\| \Sigma_i^{-\frac{1}{2}} \left[ z_i - h_i(x_i^0) - H_i \delta_i \right] \right\|^2
+$$
+
+### Defining $A_i$ and $b_i$
+
+To tidy this up, we define:
+
+$$
+A_i = \Sigma_i^{-\frac{1}{2}} H_i, \qquad b_i = \Sigma_i^{-\frac{1}{2}} \left(z_i - h_i(x_i^0)\right)
+$$
+
+| Term | Meaning |
+|---|---|
+| $A_i$ | the Jacobian $H_i$, rescaled by the whitening factor |
+| $b_i$ | the residual at the current estimate, rescaled the same way |
+
+## The Linear System
+
+With that substitution, the whole optimization collapses into a clean,
+standard linear least squares form:
+
+$$
+\delta^{*} = \operatorname*{argmin}_{\delta} \sum_i \| A_i \delta_i - b_i \|^2
+$$
+
+Stacking every factor's $A_i$ and $b_i$ together gives one big, sparse
+linear system:
+
+$$
+A\delta = b
+$$
+
+And solving that system is the actual computational core of every SLAM
+backend — everything before this was about *getting to* this system;
+everything after is about solving it efficiently.
+
+| Symbol | Name | What it is |
+|---|---|---|
+| $A$ | stacked Jacobian | every factor's whitened sensitivity matrix, stacked together |
+| $b$ | stacked residual vector | every factor's whitened residual, stacked together |
+| $\delta$ | state correction | what we solve for, then use to update our estimate |
+
+::: {.callout-note}
+## Why "huge" and why "sparse"
+
+- **Huge** — stacked across every factor, the system spans every pose
+  and every landmark in the whole trajectory.
+- **Sparse** — most entries of $A$ are zero. A factor only touches the
+  handful of variables it directly constrains, so non-zero entries only
+  appear where an actual constraint exists between variables. This is
+  the same sparsity we saw in the factor graph structure — it's what
+  makes solving a system this large even feasible.
+:::
+
+## Why Not Just Solve $A\delta = b$ Directly?
+
+It's tempting to think we're done once we have the linear system
+$A\delta = b$ — just solve it and move on. But there's a problem:
+
+> **There is usually no exact solution.**
+
+This makes sense once you think about where $A$ and $b$ actually come
+from. Different sensors give different, slightly inconsistent values —
+no single $\delta$ satisfies every constraint simultaneously. So instead
+of solving the system exactly, we find the **solution with the smallest
+total error**.
+
+## Setting Up the Cost
+
+The cost we want to minimize is:
+
+$$
+J(\delta) = \|A\delta - b\|^2
+$$
+
+Expanding this out:
+
+$$
+J(\delta) = (A\delta - b)^T (A\delta - b) = (\delta^T A^T - b^T)(A\delta - b)
+$$
+
+$$
+J(\delta) = \delta^T A^T A \delta - 2\delta^T A^T b + b^T b
+$$
+
+This is now a **quadratic function** — the matrix version of the
+familiar $ax^2 + bx + c$ from single-variable calculus.
+
+## Minimizing the Cost
+
+For a quadratic, minimizing is straightforward: take the derivative and
+set it to zero. Differentiating $J(\delta)$ with respect to $\delta$
+and setting the result to zero gives:
+
+$$
+A^T A \, \delta = A^T b
+$$
+
+::: {.callout-important}
+## The Normal Equations
+
+$$
+A^T A \, \delta = A^T b
+$$
+
+This is the linear system that actually gets solved at every iteration
+of the optimizer. Everything up to this point — linearization,
+whitening, stacking factors — exists to produce this one equation.
+:::
+
+## Why "Normal"?
+
+The name isn't arbitrary — it comes directly from geometry.
+
+Picture every column of $A$ as spanning some subspace. Since $b$
+generally doesn't lie exactly inside that column space (that's exactly
+why there's no exact solution to $A\delta = b$), the least squares
+solution instead **projects** $b$ onto the column space — finding the
+closest point in that space to $b$.
+
+That leaves an error vector:
+
+$$
+r = b - A\delta
+$$
+
+::: {.callout-note}
+## The geometric picture
+
+At the optimal $\delta$, the error vector $r$ becomes **perpendicular
+(normal)** to the column space of $A$. That perpendicularity condition
+is exactly what the normal equations enforce — which is where they get
+their name.
+:::
+
+## The Information Matrix
+
+We define:
+
+$$
+\Lambda = A^T A
+$$
+
+where $\Lambda$ is called the **information matrix**, also known as the
+**Hessian** of the cost function.
+
+$A^T A$ has two properties that matter a great deal for how we solve
+the system:
+
+| Property | Statement | Why it matters |
+|---|---|---|
+| Symmetric | $\Lambda^T = \Lambda$ | halves the storage and work needed to represent $\Lambda$ |
+| Positive semi-definite | $x^T A^T A x \geq 0$ for all $x$ | guarantees the quadratic cost has a well-defined minimum, not a saddle point |
+
+That positive semi-definiteness is what makes the system well-behaved
+enough to allow **Cholesky factorization** — a fast, numerically stable
+way to solve the normal equations.
+
+::: {.callout-warning}
+## Approximation, not the true Hessian
+
+The true Hessian of the cost function is $\dfrac{\partial^2 J}{\partial x^2}$,
+but in practice we approximate it with $A^T A$.
+
+This approximation is exactly what separates **Gauss-Newton** from full
+**Newton's method**: Gauss-Newton never computes second derivatives
+directly. That saves a lot of computation, at the cost of $A^T A$ only
+being a *good* approximation of the true Hessian near the solution.
+:::

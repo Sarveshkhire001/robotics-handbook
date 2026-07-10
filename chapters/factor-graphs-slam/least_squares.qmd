@@ -1,5 +1,5 @@
 ---
-title: "Least Squares and MAP Estimation"
+title: "Least Squares & MAP"
 ---
 
 ## Least Squares
@@ -139,7 +139,7 @@ This is exactly the quantity each factor in a SLAM problem is scoring.
 
 ## Putting the Factors Together
 
-Recall the MAP objective in terms of factors:
+Recall the [MAP objective in terms of factors](#rewriting-with-factors):
 
 $$
 x_{MAP} = \operatorname*{argmax}_{x} \; \prod_i \phi_i(x_i)

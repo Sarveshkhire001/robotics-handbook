@@ -1,0 +1,392 @@
+---
+title: "Optimization Methods"
+---
+
+## Gradient Descent
+
+### What Direction Should We Step?
+
+Suppose our current estimate is $x$, and we want to find the update
+that gets us to $x + \delta$. Using the first-order Taylor expansion
+from before:
+
+$$
+J(x+\delta) \approx J(x) + \nabla J(x)^T \delta
+$$
+
+To minimize the cost, we want $\nabla J^T \delta$ to be **as negative
+as possible**. Suppose the step length is fixed:
+
+$$
+\|\delta\| = \alpha
+$$
+
+The question becomes: which direction $\delta$ minimizes
+$\nabla J^T \delta$, given that its length is fixed?
+
+### Using the Cauchy-Schwarz Inequality
+
+Recall that for any two vectors:
+
+$$
+a^T b = \|a\| \|b\| \cos\theta
+$$
+
+Applying this to our gradient term:
+
+$$
+\nabla J^T \delta = \|\nabla J\| \|\delta\| \cos\theta
+$$
+
+and we know $\|\delta\| = \alpha$ is fixed. So this expression is
+minimized (most negative) when $\cos\theta = -1$, i.e. $\theta = 180°$
+— meaning $\delta$ points in the **exact opposite direction** of the
+gradient.
+
+This gives us:
+
+$$
+\delta = -\alpha \frac{\nabla J}{\|\nabla J\|}
+$$
+
+Absorbing the normalization into $\alpha$ (since $\alpha$ was just a
+free step-size parameter anyway):
+
+::: {.callout-important}
+## Gradient Descent
+
+$$
+\delta = -\alpha \nabla J
+$$
+
+The intuition matches the name exactly: always step directly downhill,
+opposite the gradient.
+:::
+
+### Why Is It Slow?
+
+::: {.callout-warning}
+## Two failure modes
+
+- **Near the minimum**, $\nabla J \to 0$, so the steps themselves
+  shrink to nearly nothing — convergence crawls to a halt right when
+  we're closest to the answer.
+- **In elongated valleys** — where the slope in one direction is much
+  steeper than in another — the algorithm zig-zags back and forth
+  across the steep direction while making painfully slow progress
+  along the shallow one.
+:::
+
+### Connection to SLAM
+
+Recall the quadratic cost from the [normal equations
+derivation](linearization.qmd#setting-up-the-cost),
+$J(\delta) = \|A\delta - b\|^2$. Its gradient is:
+
+$$
+g = \nabla J = A^T(Ax - b)
+$$
+
+So the gradient descent update becomes:
+
+$$
+x_{k+1} = x_k - \alpha A^T (Ax_k - b)
+$$
+
+Simple to compute, but — as we're about to see — far from the most
+efficient option available.
+
+## Newton's Method
+
+### Using Curvature, Not Just Slope
+
+This time we use the full **second-order** Taylor expansion:
+
+$$
+J(x+\delta) = J(x) + g^T \delta + \frac{1}{2}\delta^T H \delta
+$$
+
+where $g = \nabla J$ and $H = \nabla^2 J$.
+
+To find the minimum, differentiate with respect to $\delta$ and set the
+result to zero:
+
+$$
+g + H\delta = 0 \quad \Rightarrow \quad \delta = -H^{-1} g
+$$
+
+::: {.callout-important}
+## Newton's Method
+
+$$
+\delta = -H^{-1} g
+$$
+
+Unlike gradient descent, this uses **curvature** — the true Hessian
+$\nabla^2 J$ — rather than just the slope. That extra information is
+what lets Newton's method converge dramatically faster near the
+optimum: it doesn't just know which way is downhill, it knows how the
+slope itself is changing, so it can take a much better-sized step.
+:::
+
+### Why We Don't Actually Use Newton's Method
+
+::: {.callout-warning}
+## The catch
+
+Computing the true Hessian is very expensive, especially for problems
+with thousands of unknowns like SLAM. So instead, we look for a way to
+**approximate the Hessian** — which is exactly what Gauss-Newton does.
+:::
+
+## Gauss-Newton
+
+Recall the cost function in terms of the [whitened
+residual](least_squares.qmd#the-mahalanobis-distance):
+
+$$
+J(x) = r(x)^T \Sigma^{-1} r(x), \qquad r(x) = z - h(x)
+$$
+
+### Step 1: Linearize
+
+$$
+r(x + \delta) \approx r(x) + J_x \delta, \qquad J_x = \frac{\partial r}{\partial x}
+$$
+
+### Step 2: Substitute Into the Cost
+
+$$
+J(\delta) = (r + J_x \delta)^T \Sigma^{-1} (r + J_x \delta)
+$$
+
+### Step 3: Expand
+
+$$
+J(\delta) = r^T \Sigma^{-1} r + 2\delta^T J_x^T \Sigma^{-1} r + \delta^T J_x^T \Sigma^{-1} J_x \delta
+$$
+
+### Step 4: Differentiate and Set to Zero
+
+Differentiating with respect to $\delta$ and setting the result to
+zero gives:
+
+$$
+J_x^T \Sigma^{-1} J_x \, \delta = -J_x^T \Sigma^{-1} r
+$$
+
+This is the **Gauss-Newton equation** — mathematically correct as-is,
+but usually rewritten in a cleaner form.
+
+### Step 5: Whitening (Removing $\Sigma$)
+
+Define:
+
+$$
+A = \Sigma^{-\frac{1}{2}} J, \qquad b = \Sigma^{-\frac{1}{2}} r
+$$
+
+so that:
+
+$$
+A^T A = J^T \Sigma^{-1} J, \qquad A^T b = J^T \Sigma^{-1} r
+$$
+
+Substituting these in gives the familiar form:
+
+::: {.callout-important}
+## The Gauss-Newton Update
+
+$$
+A^T A \, \delta = -A^T b
+$$
+
+This is exactly the **normal equations** from before — the form most
+widely used in practice, including in libraries like GTSAM, and the
+same system solved via [Cholesky or QR factorization](cholesky_qr.qmd).
+:::
+
+### The Key Insight: We Never Computed the Hessian
+
+::: {.callout-tip}
+## Why this works
+
+We never actually formed the true Hessian $\nabla^2 J$. Instead,
+Gauss-Newton **approximates** it using only first-derivative
+information:
+
+$$
+H \approx J^T \Sigma^{-1} J
+$$
+
+This is the whole trick behind Gauss-Newton — it gets Newton-like
+convergence behavior without ever paying the cost of computing second
+derivatives, by exploiting the specific least-squares structure of the
+cost function.
+:::
+
+## The Full Gauss-Newton System
+
+Summing across all factors, the actual system being solved is:
+
+$$
+\left( \sum_i J_i^T \Sigma_i^{-1} J_i \right) \delta = -\sum_i J_i^T \Sigma_i^{-1} r_i
+$$
+
+giving us the Hessian **approximation**:
+
+$$
+H = \sum_i J_i^T \Sigma_i^{-1} J_i
+$$
+
+Compare this to the **true** Hessian, which includes an extra term:
+
+$$
+\nabla^2 J = \sum_i J_i^T \Sigma_i^{-1} J_i + \sum_i r_i \nabla^2 r_i
+$$
+
+The Gauss-Newton approximation simply drops that second term.
+
+::: {.callout-note}
+## Why this is justified
+
+This is justified by an assumption about **near convergence**: as
+$x \to x^*$, the residuals $r_i \to 0$, so the dropped term
+$r_i \nabla^2 r_i$ becomes negligible too. Near the solution, this
+approximation is excellent.
+:::
+
+### Properties of the Approximate Hessian
+
+The approximate Hessian $H = J^T \Sigma^{-1} J$ has two useful
+properties:
+
+1. **Symmetric**
+2. **Positive semi-definite**
+
+In estimation theory, $J^T \Sigma^{-1} J$ is also called the
+[**Information Matrix**](linearization.qmd#the-information-matrix) —
+and this connects directly back to something practically useful: the
+**covariance of the estimated state**:
+
+$$
+P \approx H^{-1} \approx \left(J^T \Sigma^{-1} J\right)^{-1}
+$$
+
+This is how SLAM systems report *uncertainty* on the final estimate —
+not just the best-guess pose, but how confident we should be in it.
+
+## Why Can Gauss-Newton Fail?
+
+The approximation only holds well **near** the optimum. Far from it,
+residuals $r_i$ are not small, so $r_i \nabla^2 r_i$ is no longer
+negligible — the approximate Hessian becomes a poor stand-in for the
+true one.
+
+> **Gauss-Newton can diverge when initialized far from the solution.**
+
+This is the core motivation for Levenberg-Marquardt.
+
+## Levenberg-Marquardt
+
+The question LM asks: **can we make the Hessian safer to invert?**
+
+Instead of solving the plain Gauss-Newton system $H\delta = -g$, we
+solve a modified version:
+
+::: {.callout-important}
+## The LM Update
+
+$$
+(H + \lambda I)\, \delta = -g
+$$
+
+Adding $\lambda I$ to $H$ only changes the **diagonal** entries of the
+matrix — everything off-diagonal is untouched.
+:::
+
+### Eigenvalue Interpretation
+
+To see why this damping term helps, suppose the Hessian has an eigen
+decomposition:
+
+$$
+H = V \Lambda V^T, \qquad \Lambda = \operatorname{diag}(\mu_1, \mu_2, \dots, \mu_n)
+$$
+
+Since $VV^T = I$:
+
+$$
+H + \lambda I = V(\Lambda + \lambda I)V^T
+$$
+
+So the eigenvalues simply become $\mu_i + \lambda$.
+
+**Why is this useful?** Suppose the Hessian's eigenvalues are
+$0.0001,\ 3,\ 7,\ 15$. That tiny eigenvalue is dangerous — small
+eigenvalues cause instability when inverting the matrix (near-zero
+eigenvalues blow up in the inverse). But if we set $\lambda = 10$:
+
+$$
+\text{eigenvalues} \to 10.0001,\ 13,\ 17,\ 25
+$$
+
+The matrix becomes **well-conditioned and stable**.
+
+### Another Way to See It
+
+In Newton's method, $\delta = H^{-1}g$. If one eigenvalue is very
+small, $\delta$ becomes huge — an unreliable, oversized step. LM
+prevents this by ensuring no eigenvalue of $(H + \lambda I)$ ever gets
+too close to zero.
+
+### LM's Two Behaviors
+
+LM interpolates smoothly between two extremes, depending on $\lambda$:
+
+| Regime | What happens to $H + \lambda I$ | Update reduces to | Behaves like |
+|---|---|---|---|
+| $\lambda \gg$ every eigenvalue $\mu_i$ | $H + \lambda I \approx \lambda I$ | $\delta = -\dfrac{1}{\lambda}g = -\alpha g$ | Gradient Descent |
+| $\lambda \to 0$ | $H + \lambda I \to H$ | $H\delta = -g$ | Gauss-Newton |
+
+::: {.callout-important}
+## The elegant part
+
+$$
+\boxed{\text{Large } \lambda \to \text{Gradient Descent} \qquad \text{Small } \lambda \to \text{Gauss-Newton}}
+$$
+
+LM gets gradient descent's *safety* when far from the solution, and
+Gauss-Newton's *speed* once close to it.
+:::
+
+## How to Choose $\lambda$?
+
+LM adapts $\lambda$ on the fly, iteration by iteration:
+
+1. **Initially**, assume some starting value of $\lambda$.
+2. At the current cost $J(x_k)$, compute the update $\delta$, then the
+   new state $x_{new} = x_k + \delta$, and the new cost $J(x_{new})$.
+3. Compare the new cost to the old one, and adjust $\lambda$
+   accordingly:
+
+| Outcome | Condition | Response |
+|---|---|---|
+| Good step | $J(x_{new}) < J(x_k)$ | The quadratic approximation was accurate — **decrease** $\lambda$, behave more like Gauss-Newton |
+| Bad step | $J(x_{new}) > J(x_k)$ | The approximation was untrustworthy — **increase** $\lambda$, behave more like gradient descent |
+
+::: {.callout-note}
+## $\lambda$ as a trust region
+
+The value of $\lambda$ effectively defines a **trust region**: a small
+$\lambda$ means we trust the quadratic (Gauss-Newton) approximation
+over a larger region, while a large $\lambda$ means we only trust it
+very locally.
+:::
+
+Recall the two quantities being computed each iteration (see
+[the full Gauss-Newton system](#the-full-gauss-newton-system) above):
+
+$$
+H = \sum_i J_i^T \Sigma_i^{-1} J_i, \qquad g = \sum_i J_i^T \Sigma_i^{-1} r_i
+$$

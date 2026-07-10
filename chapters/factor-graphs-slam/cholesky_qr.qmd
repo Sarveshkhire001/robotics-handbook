@@ -1,0 +1,229 @@
+---
+title: "Cholesky & QR"
+---
+
+## Cholesky Factorization
+
+We're left needing to solve the normal equations:
+
+$$
+A^T A \, \delta = A^T b
+$$
+
+Instead of inverting $A^T A$ directly (expensive and numerically
+fragile), we factor it:
+
+$$
+A^T A = R^T R \quad \to \; \text{Cholesky factor}
+$$
+
+where $R$ and $R^T$ are **triangular matrices**. Triangular systems are
+cheap to solve — that's the whole motivation here.
+
+Substituting back into the normal equations:
+
+$$
+R^T R \, \delta = A^T b
+$$
+
+Rather than solving this all at once, we split it into two much easier
+triangular systems:
+
+1. Solve for $y$ using $R^T y = A^T b$
+2. Then solve for $\delta$ using $R\delta = y$
+
+Each of these is a simple triangular solve — no expensive inversion
+required.
+
+::: {.callout-tip}
+## The payoff
+
+Cholesky takes the computation from $O(n^3)$ (a direct inversion) down
+to $O(n^2)$ per solve, by replacing one hard problem with two cheap
+triangular ones.
+:::
+
+## QR Factorization
+
+Cholesky factors $A^T A$. QR takes a different approach — it factors
+$A$ **itself**:
+
+$$
+A = QR
+$$
+
+where $Q$ is **orthogonal** and $R$ is **upper triangular**.
+
+Orthogonal means $Q^T Q = I$, which immediately gives us
+$Q^{-1} = Q^T$ — the inverse of $Q$ is just its transpose, essentially
+free to compute.
+
+### Deriving the Simplified System
+
+Starting from the original system $A\delta = b$, substitute $A = QR$:
+
+$$
+QR\delta = b
+$$
+
+Multiply both sides by $Q^T$:
+
+$$
+Q^T QR\delta = Q^T b
+$$
+
+Since $Q^T Q = I$, this collapses to:
+
+$$
+R\delta = Q^T b
+$$
+
+This is **much simpler to solve** — $R$ is triangular, so it's just a
+back-substitution away from $\delta$.
+
+## Cholesky vs. QR: Same Goal, Different Routes
+
+Both methods are ultimately solving the same problem, just via
+different factorizations:
+
+| Method | Route | Ever forms $A^T A$? |
+|---|---|---|
+| Cholesky | $A \to A^T A \to R^T R \to$ solve | Yes |
+| QR | $A \to QR \to$ solve | No |
+
+### Trade-offs
+
+| | Cholesky | QR |
+|---|---|---|
+| **Speed** | Faster, especially on sparse matrices | Slower |
+| **Numerical stability** | More sensitive to error | More stable |
+| **Typical use** | Default choice for SLAM (systems are almost always sparse) | Preferred when stability matters more than speed |
+
+::: {.callout-note}
+## Why QR is more stable
+
+The gap comes down to what happens to small errors: if $A$ is only
+slightly inaccurate, computing $A^T A$ roughly **squares** that
+inaccuracy. QR avoids this entirely, since it never forms $A^T A$ in
+the first place.
+:::
+
+The practical upshot: **QR is more numerically stable but slower**,
+while Cholesky is faster — especially on sparse problems — but slightly
+more sensitive to numerical error. Which one gets used often comes down
+to this trade-off between speed and stability for the specific problem
+at hand.
+
+## Optimization Algorithms Only Differ in One Thing
+
+Zooming out from Cholesky and QR — which are both about solving *one*
+linear system — it's worth placing that step inside the bigger picture
+of how the optimizer decides to move at all.
+
+> **Optimization algorithms only differ in how they decide to take the
+> next step.** Everything else — the problem setup, the goal — stays
+> the same.
+
+The three methods worth knowing are:
+
+1. Steepest Descent
+2. Gauss-Newton
+3. Levenberg-Marquardt
+
+### The Optimization Problem
+
+All three algorithms are solving the exact same underlying problem.
+Suppose we have an objective function:
+
+$$
+J(x) : \mathbb{R}^n \to \mathbb{R}
+$$
+
+where $x$ is an $n$-dimensional vector, and $J(x)$ is a scalar cost.
+
+**The goal:**
+
+$$
+x^{*} = \operatorname*{argmin}_{x} J(x)
+$$
+
+In SLAM specifically, this cost is the sum of squared, whitened
+residuals we derived earlier:
+
+$$
+J(x) = \sum_i \| r_i(x) \|^2_{\Sigma_i}, \qquad r_i(x) = z_i - h_i(x_i)
+$$
+
+Every algorithm below is just a different strategy for minimizing this
+same $J(x)$.
+
+## First Order vs. Second Order Optimization
+
+Every optimization algorithm tries to approximate what $J(x+\delta)$
+looks like near the current estimate $x$ — essentially asking "if I
+step in direction $\delta$, how does the cost change?" There are two
+common ways to approximate this.
+
+### 1st Order: Gradient Only
+
+$$
+J(x+\delta) \approx J(x) + \nabla J(x)^T \delta
+$$
+
+Only the **gradient** is used here — this tells us the *direction* of
+steepest change, but nothing about how the cost curves.
+
+### 2nd Order: Gradient and Curvature
+
+$$
+J(x+\delta) \approx J(x) + \nabla J(x)^T \delta + \frac{1}{2}\delta^T H \delta
+$$
+
+where $H = \nabla^2 J(x)$ is the **Hessian matrix** — it captures
+curvature, i.e., how the gradient itself is changing.
+
+::: {.callout-tip}
+## Why curvature helps
+
+Knowing curvature lets an algorithm make a much better-informed guess
+about how big a step to take — instead of just which direction to move
+in.
+:::
+
+## Comparing the Algorithms
+
+The differences between these methods come down to whether — and how —
+they use the Hessian:
+
+| Algorithm | Uses gradient | Uses Hessian |
+|---|---|---|
+| Gradient Descent | ✓ | ✗ |
+| Gauss-Newton | ✓ | Approximate |
+| Newton | ✓ | Exact |
+| Levenberg-Marquardt | ✓ | Approximate + Damping |
+
+A few things worth noticing in this table:
+
+- **Gradient descent** is the cheapest per step, since it ignores
+  curvature entirely — but that also makes it the least informed about
+  how far to step, often leading to slow zig-zagging convergence.
+- **Newton's method** uses the true Hessian and converges fastest in
+  principle, but computing the exact Hessian is often expensive or
+  impractical for large problems like SLAM.
+- **Gauss-Newton** is the practical middle ground: it approximates the
+  Hessian as $H \approx A^T A$ (as we derived in the
+  [normal equations](linearization.qmd#the-information-matrix)),
+  avoiding the cost of computing second derivatives directly. This is
+  exactly the $A^T A$ we've been factoring with Cholesky and QR above.
+- **Levenberg-Marquardt** builds on Gauss-Newton by adding a *damping*
+  term, blending it with gradient descent behavior when the Gauss-Newton
+  step would be unreliable. This is what makes LM more robust in
+  practice, particularly when far from the optimum.
+
+::: {.callout-note}
+## The throughline
+
+This progression — from no curvature information, to approximate
+curvature, to approximate-with-safety-net — is really what connects all
+three algorithms back to the same Taylor expansion framework.
+:::

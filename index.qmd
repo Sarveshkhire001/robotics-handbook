@@ -21,14 +21,6 @@ the way I wish someone had explained them to me.
 :::{#slam-chapters}
 :::
 
-### Localization
-
-*(coming soon)*
-
-### Mapping
-
-*(coming soon)*
-
-### Navigation
+### Linear Algebra
 
 *(coming soon)*

@@ -1,5 +1,5 @@
 ---
-title: "Visualizing SLAM with Factor Graphs"
+title: "Visualizing Factor Graphs"
 ---
 
 ## The unknowns
@@ -213,3 +213,19 @@ This sparsity is why SLAM problems with thousands of poses and
 landmarks are still solvable in real time — the underlying linear
 systems end up being sparse matrices, and sparse solvers scale far
 better than dense ones.
+
+## Why We Need Iteration
+
+Non-linear equations can't be solved in one shot the way linear ones 
+can. There's no closed-form inverse waiting for us. So instead, we reach 
+for **iterative algorithms** like Gauss-Newton or Levenberg-Marquardt 
+(LM).
+
+It's worth sitting with this idea before diving into the mechanics:
+
+> **No individual factor solves the problem. The solution comes from the 
+> collective agreement of all factors.**
+
+Every factor pulls the estimate toward what it believes is true, and the 
+final solution is wherever all of these competing pulls settle into 
+balance.
