@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Visualizing Factor Graphs – Robotics Handbook</title>
+<title>Optimization Methods – Robotics Handbook</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -33,8 +33,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
-<link href="../../chapters/factor-graphs-slam/least_squares.html" rel="next">
-<link href="../../chapters/factor-graphs-slam/overview.html" rel="prev">
+<link href="../../chapters/factor-graphs-slam/cholesky_qr.html" rel="prev">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
@@ -277,7 +276,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html">Visualizing Factor Graphs</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/gradient_newton.html">Optimization Methods</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -331,7 +330,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html" class="sidebar-item-text sidebar-link active">
+  <a href="../../chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Visualizing Factor Graphs</span></a>
   </div>
 </li>
@@ -355,7 +354,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../chapters/factor-graphs-slam/gradient_newton.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/gradient_newton.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Optimization Methods</span></a>
   </div>
 </li>
@@ -373,21 +372,39 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#the-unknowns" id="toc-the-unknowns" class="nav-link active" data-scroll-target="#the-unknowns"><span class="header-section-number">1</span> The unknowns</a></li>
-  <li><a href="#known-vs.-unknown" id="toc-known-vs.-unknown" class="nav-link" data-scroll-target="#known-vs.-unknown"><span class="header-section-number">2</span> Known vs.&nbsp;unknown</a></li>
-  <li><a href="#why-probabilities-must-sum-to-one" id="toc-why-probabilities-must-sum-to-one" class="nav-link" data-scroll-target="#why-probabilities-must-sum-to-one"><span class="header-section-number">3</span> Why probabilities must sum to one</a></li>
-  <li><a href="#the-state-vector" id="toc-the-state-vector" class="nav-link" data-scroll-target="#the-state-vector"><span class="header-section-number">4</span> The State Vector</a></li>
-  <li><a href="#the-posterior-distribution" id="toc-the-posterior-distribution" class="nav-link" data-scroll-target="#the-posterior-distribution"><span class="header-section-number">5</span> The Posterior Distribution</a></li>
-  <li><a href="#why-factor-graphs" id="toc-why-factor-graphs" class="nav-link" data-scroll-target="#why-factor-graphs"><span class="header-section-number">6</span> Why Factor Graphs?</a></li>
-  <li><a href="#bayesian-networks" id="toc-bayesian-networks" class="nav-link" data-scroll-target="#bayesian-networks"><span class="header-section-number">7</span> Bayesian Networks</a>
+  <li><a href="#gradient-descent" id="toc-gradient-descent" class="nav-link active" data-scroll-target="#gradient-descent"><span class="header-section-number">1</span> Gradient Descent</a>
   <ul class="collapse">
-  <li><a href="#applying-this-to-our-state-vector" id="toc-applying-this-to-our-state-vector" class="nav-link" data-scroll-target="#applying-this-to-our-state-vector"><span class="header-section-number">7.1</span> Applying this to our state vector</a></li>
-  <li><a href="#from-bayesian-network-to-factor-graph" id="toc-from-bayesian-network-to-factor-graph" class="nav-link" data-scroll-target="#from-bayesian-network-to-factor-graph"><span class="header-section-number">7.2</span> From Bayesian network to factor graph</a></li>
+  <li><a href="#what-direction-should-we-step" id="toc-what-direction-should-we-step" class="nav-link" data-scroll-target="#what-direction-should-we-step"><span class="header-section-number">1.1</span> What Direction Should We Step?</a></li>
+  <li><a href="#using-the-cauchy-schwarz-inequality" id="toc-using-the-cauchy-schwarz-inequality" class="nav-link" data-scroll-target="#using-the-cauchy-schwarz-inequality"><span class="header-section-number">1.2</span> Using the Cauchy-Schwarz Inequality</a></li>
+  <li><a href="#why-is-it-slow" id="toc-why-is-it-slow" class="nav-link" data-scroll-target="#why-is-it-slow"><span class="header-section-number">1.3</span> Why Is It Slow?</a></li>
+  <li><a href="#connection-to-slam" id="toc-connection-to-slam" class="nav-link" data-scroll-target="#connection-to-slam"><span class="header-section-number">1.4</span> Connection to SLAM</a></li>
   </ul></li>
-  <li><a href="#what-a-factor-graph-actually-is" id="toc-what-a-factor-graph-actually-is" class="nav-link" data-scroll-target="#what-a-factor-graph-actually-is"><span class="header-section-number">8</span> What a Factor Graph Actually Is</a></li>
-  <li><a href="#types-of-factors" id="toc-types-of-factors" class="nav-link" data-scroll-target="#types-of-factors"><span class="header-section-number">9</span> Types of Factors</a></li>
-  <li><a href="#why-sparsity-matters" id="toc-why-sparsity-matters" class="nav-link" data-scroll-target="#why-sparsity-matters"><span class="header-section-number">10</span> Why Sparsity Matters</a></li>
-  <li><a href="#why-we-need-iteration" id="toc-why-we-need-iteration" class="nav-link" data-scroll-target="#why-we-need-iteration"><span class="header-section-number">11</span> Why We Need Iteration</a></li>
+  <li><a href="#newtons-method" id="toc-newtons-method" class="nav-link" data-scroll-target="#newtons-method"><span class="header-section-number">2</span> Newton’s Method</a>
+  <ul class="collapse">
+  <li><a href="#using-curvature-not-just-slope" id="toc-using-curvature-not-just-slope" class="nav-link" data-scroll-target="#using-curvature-not-just-slope"><span class="header-section-number">2.1</span> Using Curvature, Not Just Slope</a></li>
+  <li><a href="#why-we-dont-actually-use-newtons-method" id="toc-why-we-dont-actually-use-newtons-method" class="nav-link" data-scroll-target="#why-we-dont-actually-use-newtons-method"><span class="header-section-number">2.2</span> Why We Don’t Actually Use Newton’s Method</a></li>
+  </ul></li>
+  <li><a href="#gauss-newton" id="toc-gauss-newton" class="nav-link" data-scroll-target="#gauss-newton"><span class="header-section-number">3</span> Gauss-Newton</a>
+  <ul class="collapse">
+  <li><a href="#step-1-linearize" id="toc-step-1-linearize" class="nav-link" data-scroll-target="#step-1-linearize"><span class="header-section-number">3.1</span> Step 1: Linearize</a></li>
+  <li><a href="#step-2-substitute-into-the-cost" id="toc-step-2-substitute-into-the-cost" class="nav-link" data-scroll-target="#step-2-substitute-into-the-cost"><span class="header-section-number">3.2</span> Step 2: Substitute Into the Cost</a></li>
+  <li><a href="#step-3-expand" id="toc-step-3-expand" class="nav-link" data-scroll-target="#step-3-expand"><span class="header-section-number">3.3</span> Step 3: Expand</a></li>
+  <li><a href="#step-4-differentiate-and-set-to-zero" id="toc-step-4-differentiate-and-set-to-zero" class="nav-link" data-scroll-target="#step-4-differentiate-and-set-to-zero"><span class="header-section-number">3.4</span> Step 4: Differentiate and Set to Zero</a></li>
+  <li><a href="#step-5-whitening-removing-sigma" id="toc-step-5-whitening-removing-sigma" class="nav-link" data-scroll-target="#step-5-whitening-removing-sigma"><span class="header-section-number">3.5</span> Step 5: Whitening (Removing <span class="math inline">\(\Sigma\)</span>)</a></li>
+  <li><a href="#the-key-insight-we-never-computed-the-hessian" id="toc-the-key-insight-we-never-computed-the-hessian" class="nav-link" data-scroll-target="#the-key-insight-we-never-computed-the-hessian"><span class="header-section-number">3.6</span> The Key Insight: We Never Computed the Hessian</a></li>
+  </ul></li>
+  <li><a href="#the-full-gauss-newton-system" id="toc-the-full-gauss-newton-system" class="nav-link" data-scroll-target="#the-full-gauss-newton-system"><span class="header-section-number">4</span> The Full Gauss-Newton System</a>
+  <ul class="collapse">
+  <li><a href="#properties-of-the-approximate-hessian" id="toc-properties-of-the-approximate-hessian" class="nav-link" data-scroll-target="#properties-of-the-approximate-hessian"><span class="header-section-number">4.1</span> Properties of the Approximate Hessian</a></li>
+  </ul></li>
+  <li><a href="#why-can-gauss-newton-fail" id="toc-why-can-gauss-newton-fail" class="nav-link" data-scroll-target="#why-can-gauss-newton-fail"><span class="header-section-number">5</span> Why Can Gauss-Newton Fail?</a></li>
+  <li><a href="#levenberg-marquardt" id="toc-levenberg-marquardt" class="nav-link" data-scroll-target="#levenberg-marquardt"><span class="header-section-number">6</span> Levenberg-Marquardt</a>
+  <ul class="collapse">
+  <li><a href="#eigenvalue-interpretation" id="toc-eigenvalue-interpretation" class="nav-link" data-scroll-target="#eigenvalue-interpretation"><span class="header-section-number">6.1</span> Eigenvalue Interpretation</a></li>
+  <li><a href="#another-way-to-see-it" id="toc-another-way-to-see-it" class="nav-link" data-scroll-target="#another-way-to-see-it"><span class="header-section-number">6.2</span> Another Way to See It</a></li>
+  <li><a href="#lms-two-behaviors" id="toc-lms-two-behaviors" class="nav-link" data-scroll-target="#lms-two-behaviors"><span class="header-section-number">6.3</span> LM’s Two Behaviors</a></li>
+  </ul></li>
+  <li><a href="#how-to-choose-lambda" id="toc-how-to-choose-lambda" class="nav-link" data-scroll-target="#how-to-choose-lambda"><span class="header-section-number">7</span> How to Choose <span class="math inline">\(\lambda\)</span>?</a></li>
   </ul>
 </nav>
     </div>
@@ -395,9 +412,9 @@ window.Quarto = {
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html">Visualizing Factor Graphs</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/gradient_newton.html">Optimization Methods</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Visualizing Factor Graphs</h1>
+<h1 class="title">Optimization Methods</h1>
 </div>
 
 
@@ -414,153 +431,406 @@ window.Quarto = {
 </header>
 
 
-<section id="the-unknowns" class="level2" data-number="1">
-<h2 data-number="1" class="anchored" data-anchor-id="the-unknowns"><span class="header-section-number">1</span> The unknowns</h2>
-<p>We’re solving for a state vector containing both robot poses and landmarks:</p>
+<section id="gradient-descent" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="gradient-descent"><span class="header-section-number">1</span> Gradient Descent</h2>
+<section id="what-direction-should-we-step" class="level3" data-number="1.1">
+<h3 data-number="1.1" class="anchored" data-anchor-id="what-direction-should-we-step"><span class="header-section-number">1.1</span> What Direction Should We Step?</h3>
+<p>Suppose our current estimate is <span class="math inline">\(x\)</span>, and we want to find the update that gets us to <span class="math inline">\(x + \delta\)</span>. Using the first-order Taylor expansion from before:</p>
 <p><span class="math display">\[
-\mathbf{x} = \begin{bmatrix} P_1 \\ P_2 \\ P_3 \\ l_1 \\ l_2 \end{bmatrix}
+J(x+\delta) \approx J(x) + \nabla J(x)^T \delta
 \]</span></p>
-<p>where <span class="math inline">\(P_i\)</span> are robot poses at different times and <span class="math inline">\(l_i\)</span> are landmark positions.</p>
+<p>To minimize the cost, we want <span class="math inline">\(\nabla J^T \delta\)</span> to be <strong>as negative as possible</strong>. Suppose the step length is fixed:</p>
+<p><span class="math display">\[
+\|\delta\| = \alpha
+\]</span></p>
+<p>The question becomes: which direction <span class="math inline">\(\delta\)</span> minimizes <span class="math inline">\(\nabla J^T \delta\)</span>, given that its length is fixed?</p>
 </section>
-<section id="known-vs.-unknown" class="level2" data-number="2">
-<h2 data-number="2" class="anchored" data-anchor-id="known-vs.-unknown"><span class="header-section-number">2</span> Known vs.&nbsp;unknown</h2>
-<p>The measurements are what’s “known” — but here’s the key idea that trips people up at first: <strong>every measurement carries uncertainty.</strong> A LiDAR scan doesn’t tell you “the wall is exactly 3.000m away.” It tells you “the wall is probably around 3m away, plus or minus some noise.”</p>
-<p>That uncertainty is <em>why</em> SLAM is fundamentally a probability problem, not a geometry problem.</p>
-<blockquote class="blockquote">
-<p><strong>The robot never knows — it only believes.</strong></p>
-</blockquote>
-<p>This isn’t just a nice turn of phrase — it’s the mathematical foundation of the whole field. The robot maintains a <em>belief</em>: a probability distribution over where it might be, not a single certain answer.</p>
-</section>
-<section id="why-probabilities-must-sum-to-one" class="level2" data-number="3">
-<h2 data-number="3" class="anchored" data-anchor-id="why-probabilities-must-sum-to-one"><span class="header-section-number">3</span> Why probabilities must sum to one</h2>
+<section id="using-the-cauchy-schwarz-inequality" class="level3" data-number="1.2">
+<h3 data-number="1.2" class="anchored" data-anchor-id="using-the-cauchy-schwarz-inequality"><span class="header-section-number">1.2</span> Using the Cauchy-Schwarz Inequality</h3>
+<p>Recall that for any two vectors:</p>
 <p><span class="math display">\[
-\int p(x)\,dx = 1
+a^T b = \|a\| \|b\| \cos\theta
 \]</span></p>
-<p>This says: all possibilities sum to 1. In plain terms — the robot <strong>must</strong> exist somewhere. Its belief might be spread out and uncertain, but that uncertainty is distributed over the full space of possibilities, and it always adds up to total certainty that <em>some</em> pose is the true one.</p>
-<p>This single constraint is what turns “the robot is confused about its position” into something we can actually compute with.</p>
-</section>
-<section id="the-state-vector" class="level2" data-number="4">
-<h2 data-number="4" class="anchored" data-anchor-id="the-state-vector"><span class="header-section-number">4</span> The State Vector</h2>
-<p>Everything SLAM is trying to solve for lives in one big state vector, stacking robot poses and landmark positions together:</p>
+<p>Applying this to our gradient term:</p>
 <p><span class="math display">\[
-\mathbf{x} = \begin{bmatrix} P_1 \\ P_2 \\ P_3 \\ l_1 \\ l_2 \end{bmatrix}
-\rightarrow
-\begin{bmatrix} x_1 \\ y_1 \\ \theta_1 \\ x_2 \\ y_2 \end{bmatrix}
+\nabla J^T \delta = \|\nabla J\| \|\delta\| \cos\theta
 \]</span></p>
-<p>Each <strong>pose</strong> is <span class="math inline">\([x, y, \theta]\)</span>, and each <strong>landmark</strong> is <span class="math inline">\([x, y]\)</span>. Note that this is a <em>vector</em>, not a matrix — a flat list of all the unknowns concatenated together.</p>
-<p>This matters because it tells you how the optimization actually works: it doesn’t solve for the robot’s path first and then the map, or vice versa. It solves for <strong>every unknown at once</strong>, jointly.</p>
-</section>
-<section id="the-posterior-distribution" class="level2" data-number="5">
-<h2 data-number="5" class="anchored" data-anchor-id="the-posterior-distribution"><span class="header-section-number">5</span> The Posterior Distribution</h2>
-<p>The quantity we actually care about is:</p>
+<p>and we know <span class="math inline">\(\|\delta\| = \alpha\)</span> is fixed. So this expression is minimized (most negative) when <span class="math inline">\(\cos\theta = -1\)</span>, i.e.&nbsp;<span class="math inline">\(\theta = 180°\)</span> — meaning <span class="math inline">\(\delta\)</span> points in the <strong>exact opposite direction</strong> of the gradient.</p>
+<p>This gives us:</p>
 <p><span class="math display">\[
-p(x \mid z) \Rightarrow P(\text{pose} \mid \text{measurements})
+\delta = -\alpha \frac{\nabla J}{\|\nabla J\|}
 \]</span></p>
-<p>In words: given everything the sensors have measured, what’s the probability distribution over where the robot actually is (and where the landmarks actually are)?</p>
-</section>
-<section id="why-factor-graphs" class="level2" data-number="6">
-<h2 data-number="6" class="anchored" data-anchor-id="why-factor-graphs"><span class="header-section-number">6</span> Why Factor Graphs?</h2>
-<p>The core idea is deceptively simple: <strong>draw constraints as nodes.</strong> Instead of writing one huge joint probability expression, we represent each piece of evidence — each measurement, each motion step — as its own node in a graph. This turns an intractable-looking equation into something structured and sparse.</p>
-</section>
-<section id="bayesian-networks" class="level2" data-number="7">
-<h2 data-number="7" class="anchored" data-anchor-id="bayesian-networks"><span class="header-section-number">7</span> Bayesian Networks</h2>
-<p>Bayesian networks represent <strong>joint probability</strong> — but the trick is they don’t store it as one giant function. Instead, they exploit <strong>conditional independence</strong> to break it into small, manageable pieces.</p>
-<p>For example, take three variables <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, <span class="math inline">\(c\)</span>. If the dependency chain is <span class="math inline">\(A \to B \to C\)</span>, then instead of needing the full joint distribution, we can factor it as:</p>
-<p><span class="math display">\[
-P(a,b,c) = P(a) \cdot P(b \mid a) \cdot P(c \mid b)
-\]</span></p>
-<p>This is the whole reason factor graphs are tractable at all — most variables in SLAM don’t directly depend on most other variables, so we never need to compute anything close to the full joint distribution.</p>
-<section id="applying-this-to-our-state-vector" class="level3" data-number="7.1">
-<h3 data-number="7.1" class="anchored" data-anchor-id="applying-this-to-our-state-vector"><span class="header-section-number">7.1</span> Applying this to our state vector</h3>
-<p>The same logic applies directly to <span class="math inline">\(p(x \mid z)\)</span>. By Bayes’ rule:</p>
-<p><span class="math display">\[
-p(x \mid z) \propto p(z \mid x) \cdot p(x)
-\]</span></p>
-<p>Expanding over all our poses, landmarks, and measurements:</p>
-<p><span class="math display">\[
-\begin{aligned}
-p(x \mid z) \;\propto\;\; &amp; p(z_1,z_2,z_3,z_4 \mid P_1,P_2,P_3,l_1,l_2) \\
-&amp; \cdot\, p(P_1,P_2,P_3,l_1,l_2)
-\end{aligned}
-\]</span></p>
-<p>Given the dependency structure — where <span class="math inline">\(P_1 \to P_2 \to P_3\)</span> form the trajectory, and <span class="math inline">\(l_1, l_2\)</span> are landmarks observed at different points along it — this factors into:</p>
-<p><span class="math display">\[
-\begin{aligned}
-p(x \mid z) \;\propto\;\; &amp; p(P_1) \cdot p(l_1) \cdot p(l_2) \\
-&amp; \cdot\, p(P_2\mid P_1) \cdot p(P_3\mid P_2) \\
-&amp; \cdot\, p(z_1\mid P_1) \cdot p(z_2\mid P_1,l_1) \\
-&amp; \cdot\, p(z_3\mid P_2,l_1) \cdot p(z_4\mid P_3,l_2)
-\end{aligned}
-\]</span></p>
-<p>Every term in that product corresponds to one measurement or one motion step. Nothing here is arbitrary — it falls directly out of which variables were involved in producing which observation.</p>
-</section>
-<section id="from-bayesian-network-to-factor-graph" class="level3" data-number="7.2">
-<h3 data-number="7.2" class="anchored" data-anchor-id="from-bayesian-network-to-factor-graph"><span class="header-section-number">7.2</span> From Bayesian network to factor graph</h3>
-<p>Here’s the structure before and after the transformation:</p>
-<p><strong>Bayesian network</strong> (directed, showing dependency direction):</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="../../images/bayesian_network1.png" class="img-fluid figure-img" width="500"></p>
-<figcaption>Bayesian network for SLAM: poses P1, P2, P3 in a chain, landmarks l1 and l2, and measurements z1 through z4</figcaption>
-</figure>
+<p>Absorbing the normalization into <span class="math inline">\(\alpha\)</span> (since <span class="math inline">\(\alpha\)</span> was just a free step-size parameter anyway):</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
 </div>
-<p><strong>Factor graph</strong> (undirected, showing which variables a constraint touches):</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="../../images/factor_graph_slam1.png" class="img-fluid figure-img" width="500"></p>
-<figcaption>Factor graph for SLAM: variable nodes P1, P2, P3, l1, l2 connected to factor nodes φ1 through φ9</figcaption>
-</figure>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Gradient Descent
 </div>
-<ul>
-<li>Unary factors (priors): <span class="math inline">\(\phi_1(P_1)\)</span>, <span class="math inline">\(\phi_4(l_1)\)</span>, <span class="math inline">\(\phi_5(l_2)\)</span></li>
-<li>Motion factors: <span class="math inline">\(\phi_2(P_2,P_1)\)</span>, <span class="math inline">\(\phi_3(P_3,P_2)\)</span></li>
-<li>Observation factors: <span class="math inline">\(\phi_6(P_1)\)</span>, <span class="math inline">\(\phi_7(P_1,l_1)\)</span>, <span class="math inline">\(\phi_8(P_2,l_1)\)</span>, <span class="math inline">\(\phi_9(P_3,l_2)\)</span></li>
-</ul>
-<p>The shift from Bayesian network to factor graph is really a shift in <em>what the nodes mean</em>. In the Bayesian network, arrows encode causal or conditional direction. In the factor graph, we drop the directionality and instead ask: which variables does this one constraint touch?</p>
-</section>
-</section>
-<section id="what-a-factor-graph-actually-is" class="level2" data-number="8">
-<h2 data-number="8" class="anchored" data-anchor-id="what-a-factor-graph-actually-is"><span class="header-section-number">8</span> What a Factor Graph Actually Is</h2>
-<blockquote class="blockquote">
-<p>A factor graph is a graph that represents the <strong>factorization of a function</strong>.</p>
-</blockquote>
-<p>A <strong>factor</strong> is just a function that says how compatible a set of variables is with one measurement. Every factor corresponds to one constraint — one measurement, one prior, one motion estimate.</p>
-<p>The graph has exactly two kinds of nodes:</p>
-<ul>
-<li><strong>Variable nodes</strong> (circles) — poses and landmarks, the things we’re solving for</li>
-<li><strong>Factor nodes</strong> (squares) — constraints, the evidence tying variables together</li>
-</ul>
-<p>Because edges only ever connect a variable node to a factor node (never variable-to-variable or factor-to-factor), this makes it a <strong>bipartite graph</strong>. That bipartite structure is what keeps the whole system sparse and efficient to optimize — most variables only touch a handful of factors, not all of them.</p>
-</section>
-<section id="types-of-factors" class="level2" data-number="9">
-<h2 data-number="9" class="anchored" data-anchor-id="types-of-factors"><span class="header-section-number">9</span> Types of Factors</h2>
-<p>Two flavors of constraint show up constantly in a factor graph:</p>
-<ul>
-<li><span class="math inline">\(\phi(P_1)\)</span> — a <strong>unary constraint</strong>, or <em>prior</em>. It involves just one variable, expressing a belief about it in isolation (e.g., “the robot starts near the origin”).</li>
-<li><span class="math inline">\(\phi(P_2, P_1)\)</span> — a <strong>binary constraint</strong>, or <em>between</em> factor. It ties two variables together (e.g., “the robot moved this much between these two poses”).</li>
-</ul>
-</section>
-<section id="why-sparsity-matters" class="level2" data-number="10">
-<h2 data-number="10" class="anchored" data-anchor-id="why-sparsity-matters"><span class="header-section-number">10</span> Why Sparsity Matters</h2>
-<p>Here’s the property that makes factor graphs practical at scale: they’re <strong>sparse</strong>. Most nodes never connect to each other. A landmark observed early in a trajectory has no direct relationship to a pose visited much later — they only become linked indirectly, through the chain of poses in between. This makes sparsity one of the most important properties of the whole system.</p>
-<p>Formally, a factor graph is a tuple:</p>
+</div>
+<div class="callout-body-container callout-body">
 <p><span class="math display">\[
-F = (U, V, E)
+\delta = -\alpha \nabla J
 \]</span></p>
-<p>where <span class="math inline">\(U\)</span> = factor nodes, <span class="math inline">\(V\)</span> = variable nodes, and <span class="math inline">\(E\)</span> = edges. The whole factorized function is just the product over all factors:</p>
-<p><span class="math display">\[
-\phi(x) = \prod_i \phi_i(x_i)
-\]</span></p>
-<p>This sparsity is why SLAM problems with thousands of poses and landmarks are still solvable in real time — the underlying linear systems end up being sparse matrices, and sparse solvers scale far better than dense ones.</p>
+<p>The intuition matches the name exactly: always step directly downhill, opposite the gradient.</p>
+</div>
+</div>
 </section>
-<section id="why-we-need-iteration" class="level2" data-number="11">
-<h2 data-number="11" class="anchored" data-anchor-id="why-we-need-iteration"><span class="header-section-number">11</span> Why We Need Iteration</h2>
-<p>Non-linear equations can’t be solved in one shot the way linear ones can. There’s no closed-form inverse waiting for us. So instead, we reach for <strong>iterative algorithms</strong> like Gauss-Newton or Levenberg-Marquardt (LM).</p>
-<p>It’s worth sitting with this idea before diving into the mechanics:</p>
+<section id="why-is-it-slow" class="level3" data-number="1.3">
+<h3 data-number="1.3" class="anchored" data-anchor-id="why-is-it-slow"><span class="header-section-number">1.3</span> Why Is It Slow?</h3>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Two failure modes
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Near the minimum</strong>, <span class="math inline">\(\nabla J \to 0\)</span>, so the steps themselves shrink to nearly nothing — convergence crawls to a halt right when we’re closest to the answer.</li>
+<li><strong>In elongated valleys</strong> — where the slope in one direction is much steeper than in another — the algorithm zig-zags back and forth across the steep direction while making painfully slow progress along the shallow one.</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="connection-to-slam" class="level3" data-number="1.4">
+<h3 data-number="1.4" class="anchored" data-anchor-id="connection-to-slam"><span class="header-section-number">1.4</span> Connection to SLAM</h3>
+<p>Recall the quadratic cost from the <a href="../../chapters/factor-graphs-slam/linearization.html#setting-up-the-cost">normal equations derivation</a>, <span class="math inline">\(J(\delta) = \|A\delta - b\|^2\)</span>. Its gradient is:</p>
+<p><span class="math display">\[
+g = \nabla J = A^T(Ax - b)
+\]</span></p>
+<p>So the gradient descent update becomes:</p>
+<p><span class="math display">\[
+x_{k+1} = x_k - \alpha A^T (Ax_k - b)
+\]</span></p>
+<p>Simple to compute, but — as we’re about to see — far from the most efficient option available.</p>
+</section>
+</section>
+<section id="newtons-method" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="newtons-method"><span class="header-section-number">2</span> Newton’s Method</h2>
+<section id="using-curvature-not-just-slope" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="using-curvature-not-just-slope"><span class="header-section-number">2.1</span> Using Curvature, Not Just Slope</h3>
+<p>This time we use the full <strong>second-order</strong> Taylor expansion:</p>
+<p><span class="math display">\[
+J(x+\delta) = J(x) + g^T \delta + \frac{1}{2}\delta^T H \delta
+\]</span></p>
+<p>where <span class="math inline">\(g = \nabla J\)</span> and <span class="math inline">\(H = \nabla^2 J\)</span>.</p>
+<p>To find the minimum, differentiate with respect to <span class="math inline">\(\delta\)</span> and set the result to zero:</p>
+<p><span class="math display">\[
+g + H\delta = 0 \quad \Rightarrow \quad \delta = -H^{-1} g
+\]</span></p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Newton’s Method
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\delta = -H^{-1} g
+\]</span></p>
+<p>Unlike gradient descent, this uses <strong>curvature</strong> — the true Hessian <span class="math inline">\(\nabla^2 J\)</span> — rather than just the slope. That extra information is what lets Newton’s method converge dramatically faster near the optimum: it doesn’t just know which way is downhill, it knows how the slope itself is changing, so it can take a much better-sized step.</p>
+</div>
+</div>
+</section>
+<section id="why-we-dont-actually-use-newtons-method" class="level3" data-number="2.2">
+<h3 data-number="2.2" class="anchored" data-anchor-id="why-we-dont-actually-use-newtons-method"><span class="header-section-number">2.2</span> Why We Don’t Actually Use Newton’s Method</h3>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>The catch
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Computing the true Hessian is very expensive, especially for problems with thousands of unknowns like SLAM. So instead, we look for a way to <strong>approximate the Hessian</strong> — which is exactly what Gauss-Newton does.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="gauss-newton" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="gauss-newton"><span class="header-section-number">3</span> Gauss-Newton</h2>
+<p>Recall the cost function in terms of the <a href="../../chapters/factor-graphs-slam/least_squares.html#the-mahalanobis-distance">whitened residual</a>:</p>
+<p><span class="math display">\[
+J(x) = r(x)^T \Sigma^{-1} r(x), \qquad r(x) = z - h(x)
+\]</span></p>
+<section id="step-1-linearize" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="step-1-linearize"><span class="header-section-number">3.1</span> Step 1: Linearize</h3>
+<p><span class="math display">\[
+r(x + \delta) \approx r(x) + J_x \delta, \qquad J_x = \frac{\partial r}{\partial x}
+\]</span></p>
+</section>
+<section id="step-2-substitute-into-the-cost" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="step-2-substitute-into-the-cost"><span class="header-section-number">3.2</span> Step 2: Substitute Into the Cost</h3>
+<p><span class="math display">\[
+J(\delta) = (r + J_x \delta)^T \Sigma^{-1} (r + J_x \delta)
+\]</span></p>
+</section>
+<section id="step-3-expand" class="level3" data-number="3.3">
+<h3 data-number="3.3" class="anchored" data-anchor-id="step-3-expand"><span class="header-section-number">3.3</span> Step 3: Expand</h3>
+<p><span class="math display">\[
+J(\delta) = r^T \Sigma^{-1} r + 2\delta^T J_x^T \Sigma^{-1} r + \delta^T J_x^T \Sigma^{-1} J_x \delta
+\]</span></p>
+</section>
+<section id="step-4-differentiate-and-set-to-zero" class="level3" data-number="3.4">
+<h3 data-number="3.4" class="anchored" data-anchor-id="step-4-differentiate-and-set-to-zero"><span class="header-section-number">3.4</span> Step 4: Differentiate and Set to Zero</h3>
+<p>Differentiating with respect to <span class="math inline">\(\delta\)</span> and setting the result to zero gives:</p>
+<p><span class="math display">\[
+J_x^T \Sigma^{-1} J_x \, \delta = -J_x^T \Sigma^{-1} r
+\]</span></p>
+<p>This is the <strong>Gauss-Newton equation</strong> — mathematically correct as-is, but usually rewritten in a cleaner form.</p>
+</section>
+<section id="step-5-whitening-removing-sigma" class="level3" data-number="3.5">
+<h3 data-number="3.5" class="anchored" data-anchor-id="step-5-whitening-removing-sigma"><span class="header-section-number">3.5</span> Step 5: Whitening (Removing <span class="math inline">\(\Sigma\)</span>)</h3>
+<p>Define:</p>
+<p><span class="math display">\[
+A = \Sigma^{-\frac{1}{2}} J, \qquad b = \Sigma^{-\frac{1}{2}} r
+\]</span></p>
+<p>so that:</p>
+<p><span class="math display">\[
+A^T A = J^T \Sigma^{-1} J, \qquad A^T b = J^T \Sigma^{-1} r
+\]</span></p>
+<p>Substituting these in gives the familiar form:</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>The Gauss-Newton Update
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+A^T A \, \delta = -A^T b
+\]</span></p>
+<p>This is exactly the <strong>normal equations</strong> from before — the form most widely used in practice, including in libraries like GTSAM, and the same system solved via <a href="../../chapters/factor-graphs-slam/cholesky_qr.html">Cholesky or QR factorization</a>.</p>
+</div>
+</div>
+</section>
+<section id="the-key-insight-we-never-computed-the-hessian" class="level3" data-number="3.6">
+<h3 data-number="3.6" class="anchored" data-anchor-id="the-key-insight-we-never-computed-the-hessian"><span class="header-section-number">3.6</span> The Key Insight: We Never Computed the Hessian</h3>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Why this works
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>We never actually formed the true Hessian <span class="math inline">\(\nabla^2 J\)</span>. Instead, Gauss-Newton <strong>approximates</strong> it using only first-derivative information:</p>
+<p><span class="math display">\[
+H \approx J^T \Sigma^{-1} J
+\]</span></p>
+<p>This is the whole trick behind Gauss-Newton — it gets Newton-like convergence behavior without ever paying the cost of computing second derivatives, by exploiting the specific least-squares structure of the cost function.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="the-full-gauss-newton-system" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="the-full-gauss-newton-system"><span class="header-section-number">4</span> The Full Gauss-Newton System</h2>
+<p>Summing across all factors, the actual system being solved is:</p>
+<p><span class="math display">\[
+\left( \sum_i J_i^T \Sigma_i^{-1} J_i \right) \delta = -\sum_i J_i^T \Sigma_i^{-1} r_i
+\]</span></p>
+<p>giving us the Hessian <strong>approximation</strong>:</p>
+<p><span class="math display">\[
+H = \sum_i J_i^T \Sigma_i^{-1} J_i
+\]</span></p>
+<p>Compare this to the <strong>true</strong> Hessian, which includes an extra term:</p>
+<p><span class="math display">\[
+\nabla^2 J = \sum_i J_i^T \Sigma_i^{-1} J_i + \sum_i r_i \nabla^2 r_i
+\]</span></p>
+<p>The Gauss-Newton approximation simply drops that second term.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Why this is justified
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This is justified by an assumption about <strong>near convergence</strong>: as <span class="math inline">\(x \to x^*\)</span>, the residuals <span class="math inline">\(r_i \to 0\)</span>, so the dropped term <span class="math inline">\(r_i \nabla^2 r_i\)</span> becomes negligible too. Near the solution, this approximation is excellent.</p>
+</div>
+</div>
+<section id="properties-of-the-approximate-hessian" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="properties-of-the-approximate-hessian"><span class="header-section-number">4.1</span> Properties of the Approximate Hessian</h3>
+<p>The approximate Hessian <span class="math inline">\(H = J^T \Sigma^{-1} J\)</span> has two useful properties:</p>
+<ol type="1">
+<li><strong>Symmetric</strong></li>
+<li><strong>Positive semi-definite</strong></li>
+</ol>
+<p>In estimation theory, <span class="math inline">\(J^T \Sigma^{-1} J\)</span> is also called the <a href="../../chapters/factor-graphs-slam/linearization.html#the-information-matrix"><strong>Information Matrix</strong></a> — and this connects directly back to something practically useful: the <strong>covariance of the estimated state</strong>:</p>
+<p><span class="math display">\[
+P \approx H^{-1} \approx \left(J^T \Sigma^{-1} J\right)^{-1}
+\]</span></p>
+<p>This is how SLAM systems report <em>uncertainty</em> on the final estimate — not just the best-guess pose, but how confident we should be in it.</p>
+</section>
+</section>
+<section id="why-can-gauss-newton-fail" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="why-can-gauss-newton-fail"><span class="header-section-number">5</span> Why Can Gauss-Newton Fail?</h2>
+<p>The approximation only holds well <strong>near</strong> the optimum. Far from it, residuals <span class="math inline">\(r_i\)</span> are not small, so <span class="math inline">\(r_i \nabla^2 r_i\)</span> is no longer negligible — the approximate Hessian becomes a poor stand-in for the true one.</p>
 <blockquote class="blockquote">
-<p><strong>No individual factor solves the problem. The solution comes from the collective agreement of all factors.</strong></p>
+<p><strong>Gauss-Newton can diverge when initialized far from the solution.</strong></p>
 </blockquote>
-<p>Every factor pulls the estimate toward what it believes is true, and the final solution is wherever all of these competing pulls settle into balance.</p>
+<p>This is the core motivation for Levenberg-Marquardt.</p>
+</section>
+<section id="levenberg-marquardt" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="levenberg-marquardt"><span class="header-section-number">6</span> Levenberg-Marquardt</h2>
+<p>The question LM asks: <strong>can we make the Hessian safer to invert?</strong></p>
+<p>Instead of solving the plain Gauss-Newton system <span class="math inline">\(H\delta = -g\)</span>, we solve a modified version:</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>The LM Update
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+(H + \lambda I)\, \delta = -g
+\]</span></p>
+<p>Adding <span class="math inline">\(\lambda I\)</span> to <span class="math inline">\(H\)</span> only changes the <strong>diagonal</strong> entries of the matrix — everything off-diagonal is untouched.</p>
+</div>
+</div>
+<section id="eigenvalue-interpretation" class="level3" data-number="6.1">
+<h3 data-number="6.1" class="anchored" data-anchor-id="eigenvalue-interpretation"><span class="header-section-number">6.1</span> Eigenvalue Interpretation</h3>
+<p>To see why this damping term helps, suppose the Hessian has an eigen decomposition:</p>
+<p><span class="math display">\[
+H = V \Lambda V^T, \qquad \Lambda = \operatorname{diag}(\mu_1, \mu_2, \dots, \mu_n)
+\]</span></p>
+<p>Since <span class="math inline">\(VV^T = I\)</span>:</p>
+<p><span class="math display">\[
+H + \lambda I = V(\Lambda + \lambda I)V^T
+\]</span></p>
+<p>So the eigenvalues simply become <span class="math inline">\(\mu_i + \lambda\)</span>.</p>
+<p><strong>Why is this useful?</strong> Suppose the Hessian’s eigenvalues are <span class="math inline">\(0.0001,\ 3,\ 7,\ 15\)</span>. That tiny eigenvalue is dangerous — small eigenvalues cause instability when inverting the matrix (near-zero eigenvalues blow up in the inverse). But if we set <span class="math inline">\(\lambda = 10\)</span>:</p>
+<p><span class="math display">\[
+\text{eigenvalues} \to 10.0001,\ 13,\ 17,\ 25
+\]</span></p>
+<p>The matrix becomes <strong>well-conditioned and stable</strong>.</p>
+</section>
+<section id="another-way-to-see-it" class="level3" data-number="6.2">
+<h3 data-number="6.2" class="anchored" data-anchor-id="another-way-to-see-it"><span class="header-section-number">6.2</span> Another Way to See It</h3>
+<p>In Newton’s method, <span class="math inline">\(\delta = H^{-1}g\)</span>. If one eigenvalue is very small, <span class="math inline">\(\delta\)</span> becomes huge — an unreliable, oversized step. LM prevents this by ensuring no eigenvalue of <span class="math inline">\((H + \lambda I)\)</span> ever gets too close to zero.</p>
+</section>
+<section id="lms-two-behaviors" class="level3" data-number="6.3">
+<h3 data-number="6.3" class="anchored" data-anchor-id="lms-two-behaviors"><span class="header-section-number">6.3</span> LM’s Two Behaviors</h3>
+<p>LM interpolates smoothly between two extremes, depending on <span class="math inline">\(\lambda\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Regime</th>
+<th>What happens to <span class="math inline">\(H + \lambda I\)</span></th>
+<th>Update reduces to</th>
+<th>Behaves like</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\lambda \gg\)</span> every eigenvalue <span class="math inline">\(\mu_i\)</span></td>
+<td><span class="math inline">\(H + \lambda I \approx \lambda I\)</span></td>
+<td><span class="math inline">\(\delta = -\dfrac{1}{\lambda}g = -\alpha g\)</span></td>
+<td>Gradient Descent</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\lambda \to 0\)</span></td>
+<td><span class="math inline">\(H + \lambda I \to H\)</span></td>
+<td><span class="math inline">\(H\delta = -g\)</span></td>
+<td>Gauss-Newton</td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>The elegant part
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\boxed{\text{Large } \lambda \to \text{Gradient Descent} \qquad \text{Small } \lambda \to \text{Gauss-Newton}}
+\]</span></p>
+<p>LM gets gradient descent’s <em>safety</em> when far from the solution, and Gauss-Newton’s <em>speed</em> once close to it.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="how-to-choose-lambda" class="level2" data-number="7">
+<h2 data-number="7" class="anchored" data-anchor-id="how-to-choose-lambda"><span class="header-section-number">7</span> How to Choose <span class="math inline">\(\lambda\)</span>?</h2>
+<p>LM adapts <span class="math inline">\(\lambda\)</span> on the fly, iteration by iteration:</p>
+<ol type="1">
+<li><strong>Initially</strong>, assume some starting value of <span class="math inline">\(\lambda\)</span>.</li>
+<li>At the current cost <span class="math inline">\(J(x_k)\)</span>, compute the update <span class="math inline">\(\delta\)</span>, then the new state <span class="math inline">\(x_{new} = x_k + \delta\)</span>, and the new cost <span class="math inline">\(J(x_{new})\)</span>.</li>
+<li>Compare the new cost to the old one, and adjust <span class="math inline">\(\lambda\)</span> accordingly:</li>
+</ol>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Outcome</th>
+<th>Condition</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Good step</td>
+<td><span class="math inline">\(J(x_{new}) &lt; J(x_k)\)</span></td>
+<td>The quadratic approximation was accurate — <strong>decrease</strong> <span class="math inline">\(\lambda\)</span>, behave more like Gauss-Newton</td>
+</tr>
+<tr class="even">
+<td>Bad step</td>
+<td><span class="math inline">\(J(x_{new}) &gt; J(x_k)\)</span></td>
+<td>The approximation was untrustworthy — <strong>increase</strong> <span class="math inline">\(\lambda\)</span>, behave more like gradient descent</td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span><span class="math inline">\(\lambda\)</span> as a trust region
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The value of <span class="math inline">\(\lambda\)</span> effectively defines a <strong>trust region</strong>: a small <span class="math inline">\(\lambda\)</span> means we trust the quadratic (Gauss-Newton) approximation over a larger region, while a large <span class="math inline">\(\lambda\)</span> means we only trust it very locally.</p>
+</div>
+</div>
+<p>Recall the two quantities being computed each iteration (see <a href="#the-full-gauss-newton-system">the full Gauss-Newton system</a> above):</p>
+<p><span class="math display">\[
+H = \sum_i J_i^T \Sigma_i^{-1} J_i, \qquad g = \sum_i J_i^T \Sigma_i^{-1} r_i
+\]</span></p>
 
 
 </section>
@@ -981,14 +1251,11 @@ F = (U, V, E)
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../../chapters/factor-graphs-slam/overview.html" class="pagination-link" aria-label="Overview">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Overview</span>
+      <a href="../../chapters/factor-graphs-slam/cholesky_qr.html" class="pagination-link" aria-label="Cholesky &amp; QR">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Cholesky &amp; QR</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../../chapters/factor-graphs-slam/least_squares.html" class="pagination-link" aria-label="Least Squares &amp; MAP">
-        <span class="nav-page-text">Least Squares &amp; MAP</span> <i class="bi bi-arrow-right-short"></i>
-      </a>
   </div>
 </nav>
 </div> <!-- /content -->

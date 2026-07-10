@@ -4,14 +4,14 @@
     "href": "index.html",
     "title": "ROBOTICS HANDBOOK",
     "section": "",
-    "text": "Concepts and mathematics from robotics, SLAM, and localization — written the way I wish someone had explained them to me.\n\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items\n\n\n\n\n(coming soon)\n\n\n\n(coming soon)\n\n\n\n(coming soon)"
+    "text": "Concepts and mathematics from robotics, SLAM, and localization — written the way I wish someone had explained them to me.\n\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items\n\n\n\n\n(coming soon)"
   },
   {
     "objectID": "index.html#notes-on-robotics-fundamentals",
     "href": "index.html#notes-on-robotics-fundamentals",
     "title": "ROBOTICS HANDBOOK",
     "section": "",
-    "text": "Concepts and mathematics from robotics, SLAM, and localization — written the way I wish someone had explained them to me.\n\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items\n\n\n\n\n(coming soon)\n\n\n\n(coming soon)\n\n\n\n(coming soon)"
+    "text": "Concepts and mathematics from robotics, SLAM, and localization — written the way I wish someone had explained them to me.\n\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items\n\n\n\n\n(coming soon)"
   },
   {
     "objectID": "chapters/factor-graphs-slam/overview.html",
@@ -41,12 +41,204 @@
     "objectID": "chapters/factor-graphs-slam/overview.html#the-two-halves-of-slam",
     "href": "chapters/factor-graphs-slam/overview.html#the-two-halves-of-slam",
     "title": "Overview",
-    "section": "The Two Halves of SLAM",
-    "text": "The Two Halves of SLAM\nSLAM naturally splits into two subsystems that do very different jobs:\n\n\n\nFrontend\nBackend\n\n\n\n\nExtracts features\nReceives constraints\n\n\nICP correspondences\nCreates the graph\n\n\nScan matching\nOptimization\n\n\nVisual features\nTrajectory estimation\n\n\nLoop closure detection\n\n\n\nData association\n\n\n\n\nThink of the frontend as perception — turning raw sensor data into usable geometric relationships — and the backend as inference — taking those relationships and solving for the most consistent trajectory and map.\nThe historical arc of how we solve the backend:\n\\[\n\\text{EKF SLAM} \\rightarrow \\text{Square Root SLAM} \\rightarrow \\text{Factor Graph SLAM}\n\\]",
+    "section": "2 The Two Halves of SLAM",
+    "text": "2 The Two Halves of SLAM\nSLAM naturally splits into two subsystems that do very different jobs:\n\n\n\nFrontend\nBackend\n\n\n\n\nExtracts features\nReceives constraints\n\n\nICP correspondences\nCreates the graph\n\n\nScan matching\nOptimization\n\n\nVisual features\nTrajectory estimation\n\n\nLoop closure detection\n\n\n\nData association\n\n\n\n\nThink of the frontend as perception — turning raw sensor data into usable geometric relationships — and the backend as inference — taking those relationships and solving for the most consistent trajectory and map.\nThe historical arc of how we solve the backend:\n\\[\n\\text{EKF SLAM} \\rightarrow \\text{Square Root SLAM} \\rightarrow \\text{Factor Graph SLAM}\n\\]",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
       "Overview"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html",
+    "href": "chapters/factor-graphs-slam/least_squares.html",
+    "title": "Least Squares & MAP",
+    "section": "",
+    "text": "Here’s the reframing that makes SLAM computationally tractable:\n\nWhat is the most probable robot trajectory? is exactly equivalent to minimize the sum of squared errors.\n\nThat equivalence falls directly out of assuming Gaussian noise — we’ll derive it properly in a later section. For now, here’s the pipeline it sets up:\nMeasurements → Posterior → MAP estimate → Gaussian probability → negative log → Least squares → Gauss-Newton / Levenberg-Marquardt\n\n\nThe unknowns are the full state vector, and the measurements are whatever the sensors actually gave us:\n\\[\nx = \\begin{bmatrix} P_1 \\\\ P_2 \\\\ \\vdots \\\\ l_1 \\\\ l_2 \\\\ \\vdots \\end{bmatrix}\n\\qquad\nz = \\{z_1, z_2, \\dots, z_m\\}\n\\]\nThe goal: find the best value of \\(x\\) given \\(z\\) — in other words, maximize \\(p(x \\mid z)\\).",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares & MAP"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#least-squares",
+    "href": "chapters/factor-graphs-slam/least_squares.html#least-squares",
+    "title": "Least Squares & MAP",
+    "section": "",
+    "text": "Here’s the reframing that makes SLAM computationally tractable:\n\nWhat is the most probable robot trajectory? is exactly equivalent to minimize the sum of squared errors.\n\nThat equivalence falls directly out of assuming Gaussian noise — we’ll derive it properly in a later section. For now, here’s the pipeline it sets up:\nMeasurements → Posterior → MAP estimate → Gaussian probability → negative log → Least squares → Gauss-Newton / Levenberg-Marquardt\n\n\nThe unknowns are the full state vector, and the measurements are whatever the sensors actually gave us:\n\\[\nx = \\begin{bmatrix} P_1 \\\\ P_2 \\\\ \\vdots \\\\ l_1 \\\\ l_2 \\\\ \\vdots \\end{bmatrix}\n\\qquad\nz = \\{z_1, z_2, \\dots, z_m\\}\n\\]\nThe goal: find the best value of \\(x\\) given \\(z\\) — in other words, maximize \\(p(x \\mid z)\\).",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares & MAP"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#map-estimation",
+    "href": "chapters/factor-graphs-slam/least_squares.html#map-estimation",
+    "title": "Least Squares & MAP",
+    "section": "2 MAP Estimation",
+    "text": "2 MAP Estimation\nMAP stands for Maximum A Posteriori — we want the state whose posterior probability is highest:\n\\[\nx_{MAP} = \\operatorname*{argmax}_{x} \\; p(x \\mid z)\n\\]\n\n2.1 Applying Bayes’ theorem\nDirectly optimizing \\(p(x \\mid z)\\) is awkward, so we flip it using Bayes’ rule:\n\\[\nx_{MAP} = \\operatorname*{argmax}_{x} \\;\n\\underbrace{p(z \\mid x)}_{\\text{likelihood}} \\cdot\n\\underbrace{p(x)}_{\\text{prior}}\n\\]\nThese two terms have intuitive meanings:\n\nLikelihood \\(p(z \\mid x)\\) — does this candidate state actually explain the measurements we observed?\nPrior \\(p(x)\\) — is this state physically plausible in the first place?\n\nWe can drop \\(p(z)\\) entirely, since it doesn’t depend on \\(x\\) — it’s just a normalizing constant.\n\n\n2.2 Rewriting with factors\nSince the posterior already factors into a product of \\(\\phi_i\\) terms (as we saw earlier), this becomes:\n\\[\nx_{MAP} = \\operatorname*{argmax}_{x} \\; \\prod_i \\phi_i(x_i)\n\\]\nNothing has changed mathematically — we’ve just rewritten the same optimization in terms of factors. But this is the general MAP problem, and it’s exactly the form every SLAM backend is actually solving.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares & MAP"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#modeling-measurement-noise",
+    "href": "chapters/factor-graphs-slam/least_squares.html#modeling-measurement-noise",
+    "title": "Least Squares & MAP",
+    "section": "3 Modeling Measurement Noise",
+    "text": "3 Modeling Measurement Noise\nEvery real sensor measurement is a mix of a true underlying signal and noise. We model this as:\n\\[\nz = h(x) + \\eta\n\\]\n\n\\(h(x)\\) is the prediction function — it comes from pure geometry and physics, with no randomness involved.\n\\(\\eta\\) is the noise, assumed Gaussian: \\(\\eta \\sim \\mathcal{N}(0, \\Sigma)\\).\n\nThat Gaussian assumption on the noise is doing a lot of work here — it’s what eventually lets “most probable trajectory” collapse into “minimize sum of squared errors.”\nGiven this noise model, the probability of observing \\(z\\) given a state \\(x\\) is:\n\\[\np(z \\mid x) = \\mathcal{N}(z;\\, h(x), \\Sigma)\n\\]\nExpanding the Gaussian density explicitly:\n\\[\np(z \\mid x) = \\frac{1}{\\sqrt{2\\pi\\Sigma}}\n\\exp\\left(-\\frac{1}{2} [z - h(x)]^T \\Sigma^{-1} [z - h(x)]\\right)\n\\]",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares & MAP"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#reading-the-pieces",
+    "href": "chapters/factor-graphs-slam/least_squares.html#reading-the-pieces",
+    "title": "Least Squares & MAP",
+    "section": "4 Reading the Pieces",
+    "text": "4 Reading the Pieces\n\n\\(z - h(x)\\) is the residual: actual measurement minus predicted measurement. It’s a direct measure of how wrong our current estimate is.\nInside the exponent we have the squared residual, weighted by \\(\\Sigma^{-1}\\).\n\\(\\Sigma\\) embeds the noise — it’s the covariance of the measurement.\n\\(\\Sigma^{-1}\\) is called the information matrix, since it tells us how much confidence we place in this measurement (a tighter covariance means more information).",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares & MAP"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#the-mahalanobis-distance",
+    "href": "chapters/factor-graphs-slam/least_squares.html#the-mahalanobis-distance",
+    "title": "Least Squares & MAP",
+    "section": "5 The Mahalanobis Distance",
+    "text": "5 The Mahalanobis Distance\nThe weighted squared residual has a name:\n\\[\n[z - h(x)]^T \\Sigma^{-1} [z - h(x)] = \\text{Mahalanobis distance squared}\n\\]\nUnlike ordinary Euclidean distance, Mahalanobis distance accounts for how uncertain each dimension of the measurement is — a large deviation in a noisy direction counts for less than the same deviation in a precise direction. We give it its own compact notation:\n\\[\n\\|e\\|^2_\\Sigma = e^T \\Sigma^{-1} e\n\\]\nThis is exactly the quantity each factor in a SLAM problem is scoring.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares & MAP"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#putting-the-factors-together",
+    "href": "chapters/factor-graphs-slam/least_squares.html#putting-the-factors-together",
+    "title": "Least Squares & MAP",
+    "section": "6 Putting the Factors Together",
+    "text": "6 Putting the Factors Together\nRecall the MAP objective in terms of factors:\n\\[\nx_{MAP} = \\operatorname*{argmax}_{x} \\; \\prod_i \\phi_i(x_i)\n\\]\nGiven the Gaussian noise model, each factor takes the form:\n\\[\n\\phi_i(x_i) \\propto \\exp\\left(-\\frac{1}{2} \\|z_i - h_i(x_i)\\|^2_{\\Sigma_i}\\right)\n\\]\nwhich we can write more compactly as:\n\\[\n\\phi_i(x_i) = c_i \\cdot e^{-E_i}\n\\]\nwhere \\(E_i = \\frac{1}{2}\\|z_i - h_i(x_i)\\|^2_{\\Sigma_i}\\) is the weighted squared error for factor \\(i\\).",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares & MAP"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#the-product-problem",
+    "href": "chapters/factor-graphs-slam/least_squares.html#the-product-problem",
+    "title": "Least Squares & MAP",
+    "section": "7 The Product Problem",
+    "text": "7 The Product Problem\nHere’s a practical issue: the MAP objective is a product of many exponential terms:\n\\[\nx_{MAP} \\to \\exp(-a) \\cdot \\exp(-b) \\cdot \\exp(-c) \\cdots\n\\]\nOptimizers don’t work well with long products — products of many small numbers underflow numerically, and their derivatives get messy. The fix is to take logarithms, which turns the product into a sum:\n\\[\n\\begin{aligned}\n\\prod_i \\exp(-E_i)\n\\;\\longrightarrow\\;\n& \\log\\left(\\prod_i \\exp(-E_i)\\right) \\\\\n\\;\\longrightarrow\\;\n& \\sum_i \\log(\\exp(-E_i)) \\\\\n\\;\\longrightarrow\\;\n& \\sum_i (-E_i)\n\\end{aligned}\n\\]\nSince \\(\\log\\) is monotonic, maximizing the product is equivalent to maximizing the log-sum. And flipping the sign turns a maximization into a minimization:\n\\[\n\\operatorname*{argmax}\\left(-\\sum_i E_i\\right)\n= \\operatorname*{argmin}\\left(\\sum_i E_i\\right)\n\\]\nThis is the final piece connecting everything: maximizing the posterior probability is exactly equivalent to minimizing a sum of weighted squared residuals — which is precisely the least-squares objective we started with back in the Least Squares section.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares & MAP"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/least_squares.html#from-map-to-a-concrete-optimization-problem",
+    "href": "chapters/factor-graphs-slam/least_squares.html#from-map-to-a-concrete-optimization-problem",
+    "title": "Least Squares & MAP",
+    "section": "8 From MAP to a Concrete Optimization Problem",
+    "text": "8 From MAP to a Concrete Optimization Problem\nTaking the MAP formulation and working through the Gaussian noise assumption from the previous section eventually lands us here:\n\\[\nx_{MAP} = \\operatorname*{argmin}_{x} \\sum_i \\| z_i - h_i(x_i) \\|^2_{\\Sigma_i}\n\\quad \\to \\quad \\text{Least squares}\n\\]\nThis is a least squares problem. But there’s a catch: \\(h_i(x)\\) — the function that predicts a measurement from a state — is generally a non-linear function of the state. Bearing angles, ranges, rotations: none of these are linear in \\(x\\). So what we actually have is a non-linear least squares problem.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Least Squares & MAP"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html",
+    "title": "Cholesky & QR",
+    "section": "",
+    "text": "We’re left needing to solve the normal equations:\n\\[\nA^T A \\, \\delta = A^T b\n\\]\nInstead of inverting \\(A^T A\\) directly (expensive and numerically fragile), we factor it:\n\\[\nA^T A = R^T R \\quad \\to \\; \\text{Cholesky factor}\n\\]\nwhere \\(R\\) and \\(R^T\\) are triangular matrices. Triangular systems are cheap to solve — that’s the whole motivation here.\nSubstituting back into the normal equations:\n\\[\nR^T R \\, \\delta = A^T b\n\\]\nRather than solving this all at once, we split it into two much easier triangular systems:\n\nSolve for \\(y\\) using \\(R^T y = A^T b\\)\nThen solve for \\(\\delta\\) using \\(R\\delta = y\\)\n\nEach of these is a simple triangular solve — no expensive inversion required.\n\n\n\n\n\n\nTipThe payoff\n\n\n\nCholesky takes the computation from \\(O(n^3)\\) (a direct inversion) down to \\(O(n^2)\\) per solve, by replacing one hard problem with two cheap triangular ones.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#cholesky-factorization",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html#cholesky-factorization",
+    "title": "Cholesky & QR",
+    "section": "",
+    "text": "We’re left needing to solve the normal equations:\n\\[\nA^T A \\, \\delta = A^T b\n\\]\nInstead of inverting \\(A^T A\\) directly (expensive and numerically fragile), we factor it:\n\\[\nA^T A = R^T R \\quad \\to \\; \\text{Cholesky factor}\n\\]\nwhere \\(R\\) and \\(R^T\\) are triangular matrices. Triangular systems are cheap to solve — that’s the whole motivation here.\nSubstituting back into the normal equations:\n\\[\nR^T R \\, \\delta = A^T b\n\\]\nRather than solving this all at once, we split it into two much easier triangular systems:\n\nSolve for \\(y\\) using \\(R^T y = A^T b\\)\nThen solve for \\(\\delta\\) using \\(R\\delta = y\\)\n\nEach of these is a simple triangular solve — no expensive inversion required.\n\n\n\n\n\n\nTipThe payoff\n\n\n\nCholesky takes the computation from \\(O(n^3)\\) (a direct inversion) down to \\(O(n^2)\\) per solve, by replacing one hard problem with two cheap triangular ones.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#qr-factorization",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html#qr-factorization",
+    "title": "Cholesky & QR",
+    "section": "2 QR Factorization",
+    "text": "2 QR Factorization\nCholesky factors \\(A^T A\\). QR takes a different approach — it factors \\(A\\) itself:\n\\[\nA = QR\n\\]\nwhere \\(Q\\) is orthogonal and \\(R\\) is upper triangular.\nOrthogonal means \\(Q^T Q = I\\), which immediately gives us \\(Q^{-1} = Q^T\\) — the inverse of \\(Q\\) is just its transpose, essentially free to compute.\n\n2.1 Deriving the Simplified System\nStarting from the original system \\(A\\delta = b\\), substitute \\(A = QR\\):\n\\[\nQR\\delta = b\n\\]\nMultiply both sides by \\(Q^T\\):\n\\[\nQ^T QR\\delta = Q^T b\n\\]\nSince \\(Q^T Q = I\\), this collapses to:\n\\[\nR\\delta = Q^T b\n\\]\nThis is much simpler to solve — \\(R\\) is triangular, so it’s just a back-substitution away from \\(\\delta\\).",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#cholesky-vs.-qr-same-goal-different-routes",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html#cholesky-vs.-qr-same-goal-different-routes",
+    "title": "Cholesky & QR",
+    "section": "3 Cholesky vs. QR: Same Goal, Different Routes",
+    "text": "3 Cholesky vs. QR: Same Goal, Different Routes\nBoth methods are ultimately solving the same problem, just via different factorizations:\n\n\n\nMethod\nRoute\nEver forms \\(A^T A\\)?\n\n\n\n\nCholesky\n\\(A \\to A^T A \\to R^T R \\to\\) solve\nYes\n\n\nQR\n\\(A \\to QR \\to\\) solve\nNo\n\n\n\n\n3.1 Trade-offs\n\n\n\n\n\n\n\n\n\nCholesky\nQR\n\n\n\n\nSpeed\nFaster, especially on sparse matrices\nSlower\n\n\nNumerical stability\nMore sensitive to error\nMore stable\n\n\nTypical use\nDefault choice for SLAM (systems are almost always sparse)\nPreferred when stability matters more than speed\n\n\n\n\n\n\n\n\n\nNoteWhy QR is more stable\n\n\n\nThe gap comes down to what happens to small errors: if \\(A\\) is only slightly inaccurate, computing \\(A^T A\\) roughly squares that inaccuracy. QR avoids this entirely, since it never forms \\(A^T A\\) in the first place.\n\n\nThe practical upshot: QR is more numerically stable but slower, while Cholesky is faster — especially on sparse problems — but slightly more sensitive to numerical error. Which one gets used often comes down to this trade-off between speed and stability for the specific problem at hand.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#optimization-algorithms-only-differ-in-one-thing",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html#optimization-algorithms-only-differ-in-one-thing",
+    "title": "Cholesky & QR",
+    "section": "4 Optimization Algorithms Only Differ in One Thing",
+    "text": "4 Optimization Algorithms Only Differ in One Thing\nZooming out from Cholesky and QR — which are both about solving one linear system — it’s worth placing that step inside the bigger picture of how the optimizer decides to move at all.\n\nOptimization algorithms only differ in how they decide to take the next step. Everything else — the problem setup, the goal — stays the same.\n\nThe three methods worth knowing are:\n\nSteepest Descent\nGauss-Newton\nLevenberg-Marquardt\n\n\n4.1 The Optimization Problem\nAll three algorithms are solving the exact same underlying problem. Suppose we have an objective function:\n\\[\nJ(x) : \\mathbb{R}^n \\to \\mathbb{R}\n\\]\nwhere \\(x\\) is an \\(n\\)-dimensional vector, and \\(J(x)\\) is a scalar cost.\nThe goal:\n\\[\nx^{*} = \\operatorname*{argmin}_{x} J(x)\n\\]\nIn SLAM specifically, this cost is the sum of squared, whitened residuals we derived earlier:\n\\[\nJ(x) = \\sum_i \\| r_i(x) \\|^2_{\\Sigma_i}, \\qquad r_i(x) = z_i - h_i(x_i)\n\\]\nEvery algorithm below is just a different strategy for minimizing this same \\(J(x)\\).",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#first-order-vs.-second-order-optimization",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html#first-order-vs.-second-order-optimization",
+    "title": "Cholesky & QR",
+    "section": "5 First Order vs. Second Order Optimization",
+    "text": "5 First Order vs. Second Order Optimization\nEvery optimization algorithm tries to approximate what \\(J(x+\\delta)\\) looks like near the current estimate \\(x\\) — essentially asking “if I step in direction \\(\\delta\\), how does the cost change?” There are two common ways to approximate this.\n\n5.1 1st Order: Gradient Only\n\\[\nJ(x+\\delta) \\approx J(x) + \\nabla J(x)^T \\delta\n\\]\nOnly the gradient is used here — this tells us the direction of steepest change, but nothing about how the cost curves.\n\n\n5.2 2nd Order: Gradient and Curvature\n\\[\nJ(x+\\delta) \\approx J(x) + \\nabla J(x)^T \\delta + \\frac{1}{2}\\delta^T H \\delta\n\\]\nwhere \\(H = \\nabla^2 J(x)\\) is the Hessian matrix — it captures curvature, i.e., how the gradient itself is changing.\n\n\n\n\n\n\nTipWhy curvature helps\n\n\n\nKnowing curvature lets an algorithm make a much better-informed guess about how big a step to take — instead of just which direction to move in.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#comparing-the-algorithms",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html#comparing-the-algorithms",
+    "title": "Cholesky & QR",
+    "section": "6 Comparing the Algorithms",
+    "text": "6 Comparing the Algorithms\nThe differences between these methods come down to whether — and how — they use the Hessian:\n\n\n\nAlgorithm\nUses gradient\nUses Hessian\n\n\n\n\nGradient Descent\n✓\n✗\n\n\nGauss-Newton\n✓\nApproximate\n\n\nNewton\n✓\nExact\n\n\nLevenberg-Marquardt\n✓\nApproximate + Damping\n\n\n\nA few things worth noticing in this table:\n\nGradient descent is the cheapest per step, since it ignores curvature entirely — but that also makes it the least informed about how far to step, often leading to slow zig-zagging convergence.\nNewton’s method uses the true Hessian and converges fastest in principle, but computing the exact Hessian is often expensive or impractical for large problems like SLAM.\nGauss-Newton is the practical middle ground: it approximates the Hessian as \\(H \\approx A^T A\\) (as we derived in the normal equations), avoiding the cost of computing second derivatives directly. This is exactly the \\(A^T A\\) we’ve been factoring with Cholesky and QR above.\nLevenberg-Marquardt builds on Gauss-Newton by adding a damping term, blending it with gradient descent behavior when the Gauss-Newton step would be unreliable. This is what makes LM more robust in practice, particularly when far from the optimum.\n\n\n\n\n\n\n\nNoteThe throughline\n\n\n\nThis progression — from no curvature information, to approximate curvature, to approximate-with-safety-net — is really what connects all three algorithms back to the same Taylor expansion framework.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
     ]
   },
   {
@@ -57,243 +249,363 @@
     "text": "About this site"
   },
   {
-    "objectID": "chapters/factor-graphs-slam/least_squares.html",
-    "href": "chapters/factor-graphs-slam/least_squares.html",
-    "title": "Least Squares and MAP Estimation",
+    "objectID": "chapters/factor-graphs-slam/gradient_newton.html",
+    "href": "chapters/factor-graphs-slam/gradient_newton.html",
+    "title": "Optimization Methods",
     "section": "",
-    "text": "Here’s the reframing that makes SLAM computationally tractable:\n\nWhat is the most probable robot trajectory? is exactly equivalent to minimize the sum of squared errors.\n\nThat equivalence falls directly out of assuming Gaussian noise — we’ll derive it properly in a later section. For now, here’s the pipeline it sets up:\nMeasurements → Posterior → MAP estimate → Gaussian probability → negative log → Least squares → Gauss-Newton / Levenberg-Marquardt\n\n\nThe unknowns are the full state vector, and the measurements are whatever the sensors actually gave us:\n\\[\nx = \\begin{bmatrix} P_1 \\\\ P_2 \\\\ \\vdots \\\\ l_1 \\\\ l_2 \\\\ \\vdots \\end{bmatrix}\n\\qquad\nz = \\{z_1, z_2, \\dots, z_m\\}\n\\]\nThe goal: find the best value of \\(x\\) given \\(z\\) — in other words, maximize \\(p(x \\mid z)\\).",
+    "text": "Suppose our current estimate is \\(x\\), and we want to find the update that gets us to \\(x + \\delta\\). Using the first-order Taylor expansion from before:\n\\[\nJ(x+\\delta) \\approx J(x) + \\nabla J(x)^T \\delta\n\\]\nTo minimize the cost, we want \\(\\nabla J^T \\delta\\) to be as negative as possible. Suppose the step length is fixed:\n\\[\n\\|\\delta\\| = \\alpha\n\\]\nThe question becomes: which direction \\(\\delta\\) minimizes \\(\\nabla J^T \\delta\\), given that its length is fixed?\n\n\n\nRecall that for any two vectors:\n\\[\na^T b = \\|a\\| \\|b\\| \\cos\\theta\n\\]\nApplying this to our gradient term:\n\\[\n\\nabla J^T \\delta = \\|\\nabla J\\| \\|\\delta\\| \\cos\\theta\n\\]\nand we know \\(\\|\\delta\\| = \\alpha\\) is fixed. So this expression is minimized (most negative) when \\(\\cos\\theta = -1\\), i.e. \\(\\theta = 180°\\) — meaning \\(\\delta\\) points in the exact opposite direction of the gradient.\nThis gives us:\n\\[\n\\delta = -\\alpha \\frac{\\nabla J}{\\|\\nabla J\\|}\n\\]\nAbsorbing the normalization into \\(\\alpha\\) (since \\(\\alpha\\) was just a free step-size parameter anyway):\n\n\n\n\n\n\nImportantGradient Descent\n\n\n\n\\[\n\\delta = -\\alpha \\nabla J\n\\]\nThe intuition matches the name exactly: always step directly downhill, opposite the gradient.\n\n\n\n\n\n\n\n\n\n\n\nWarningTwo failure modes\n\n\n\n\nNear the minimum, \\(\\nabla J \\to 0\\), so the steps themselves shrink to nearly nothing — convergence crawls to a halt right when we’re closest to the answer.\nIn elongated valleys — where the slope in one direction is much steeper than in another — the algorithm zig-zags back and forth across the steep direction while making painfully slow progress along the shallow one.\n\n\n\n\n\n\nRecall the quadratic cost from the normal equations derivation, \\(J(\\delta) = \\|A\\delta - b\\|^2\\). Its gradient is:\n\\[\ng = \\nabla J = A^T(Ax - b)\n\\]\nSo the gradient descent update becomes:\n\\[\nx_{k+1} = x_k - \\alpha A^T (Ax_k - b)\n\\]\nSimple to compute, but — as we’re about to see — far from the most efficient option available.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Least Squares and MAP Estimation"
+      "Optimization Methods"
     ]
   },
   {
-    "objectID": "chapters/factor-graphs-slam/least_squares.html#least-squares",
-    "href": "chapters/factor-graphs-slam/least_squares.html#least-squares",
-    "title": "Least Squares and MAP Estimation",
+    "objectID": "chapters/factor-graphs-slam/gradient_newton.html#gradient-descent",
+    "href": "chapters/factor-graphs-slam/gradient_newton.html#gradient-descent",
+    "title": "Optimization Methods",
     "section": "",
-    "text": "Here’s the reframing that makes SLAM computationally tractable:\n\nWhat is the most probable robot trajectory? is exactly equivalent to minimize the sum of squared errors.\n\nThat equivalence falls directly out of assuming Gaussian noise — we’ll derive it properly in a later section. For now, here’s the pipeline it sets up:\nMeasurements → Posterior → MAP estimate → Gaussian probability → negative log → Least squares → Gauss-Newton / Levenberg-Marquardt\n\n\nThe unknowns are the full state vector, and the measurements are whatever the sensors actually gave us:\n\\[\nx = \\begin{bmatrix} P_1 \\\\ P_2 \\\\ \\vdots \\\\ l_1 \\\\ l_2 \\\\ \\vdots \\end{bmatrix}\n\\qquad\nz = \\{z_1, z_2, \\dots, z_m\\}\n\\]\nThe goal: find the best value of \\(x\\) given \\(z\\) — in other words, maximize \\(p(x \\mid z)\\).",
+    "text": "Suppose our current estimate is \\(x\\), and we want to find the update that gets us to \\(x + \\delta\\). Using the first-order Taylor expansion from before:\n\\[\nJ(x+\\delta) \\approx J(x) + \\nabla J(x)^T \\delta\n\\]\nTo minimize the cost, we want \\(\\nabla J^T \\delta\\) to be as negative as possible. Suppose the step length is fixed:\n\\[\n\\|\\delta\\| = \\alpha\n\\]\nThe question becomes: which direction \\(\\delta\\) minimizes \\(\\nabla J^T \\delta\\), given that its length is fixed?\n\n\n\nRecall that for any two vectors:\n\\[\na^T b = \\|a\\| \\|b\\| \\cos\\theta\n\\]\nApplying this to our gradient term:\n\\[\n\\nabla J^T \\delta = \\|\\nabla J\\| \\|\\delta\\| \\cos\\theta\n\\]\nand we know \\(\\|\\delta\\| = \\alpha\\) is fixed. So this expression is minimized (most negative) when \\(\\cos\\theta = -1\\), i.e. \\(\\theta = 180°\\) — meaning \\(\\delta\\) points in the exact opposite direction of the gradient.\nThis gives us:\n\\[\n\\delta = -\\alpha \\frac{\\nabla J}{\\|\\nabla J\\|}\n\\]\nAbsorbing the normalization into \\(\\alpha\\) (since \\(\\alpha\\) was just a free step-size parameter anyway):\n\n\n\n\n\n\nImportantGradient Descent\n\n\n\n\\[\n\\delta = -\\alpha \\nabla J\n\\]\nThe intuition matches the name exactly: always step directly downhill, opposite the gradient.\n\n\n\n\n\n\n\n\n\n\n\nWarningTwo failure modes\n\n\n\n\nNear the minimum, \\(\\nabla J \\to 0\\), so the steps themselves shrink to nearly nothing — convergence crawls to a halt right when we’re closest to the answer.\nIn elongated valleys — where the slope in one direction is much steeper than in another — the algorithm zig-zags back and forth across the steep direction while making painfully slow progress along the shallow one.\n\n\n\n\n\n\nRecall the quadratic cost from the normal equations derivation, \\(J(\\delta) = \\|A\\delta - b\\|^2\\). Its gradient is:\n\\[\ng = \\nabla J = A^T(Ax - b)\n\\]\nSo the gradient descent update becomes:\n\\[\nx_{k+1} = x_k - \\alpha A^T (Ax_k - b)\n\\]\nSimple to compute, but — as we’re about to see — far from the most efficient option available.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Least Squares and MAP Estimation"
+      "Optimization Methods"
     ]
   },
   {
-    "objectID": "chapters/factor-graphs-slam/least_squares.html#map-estimation",
-    "href": "chapters/factor-graphs-slam/least_squares.html#map-estimation",
-    "title": "Least Squares and MAP Estimation",
-    "section": "MAP Estimation",
-    "text": "MAP Estimation\nMAP stands for Maximum A Posteriori — we want the state whose posterior probability is highest:\n\\[\nx_{MAP} = \\operatorname*{argmax}_{x} \\; p(x \\mid z)\n\\]\n\nApplying Bayes’ theorem\nDirectly optimizing \\(p(x \\mid z)\\) is awkward, so we flip it using Bayes’ rule:\n\\[\nx_{MAP} = \\operatorname*{argmax}_{x} \\;\n\\underbrace{p(z \\mid x)}_{\\text{likelihood}} \\cdot\n\\underbrace{p(x)}_{\\text{prior}}\n\\]\nThese two terms have intuitive meanings:\n\nLikelihood \\(p(z \\mid x)\\) — does this candidate state actually explain the measurements we observed?\nPrior \\(p(x)\\) — is this state physically plausible in the first place?\n\nWe can drop \\(p(z)\\) entirely, since it doesn’t depend on \\(x\\) — it’s just a normalizing constant.\n\n\nRewriting with factors\nSince the posterior already factors into a product of \\(\\phi_i\\) terms (as we saw earlier), this becomes:\n\\[\nx_{MAP} = \\operatorname*{argmax}_{x} \\; \\prod_i \\phi_i(x_i)\n\\]\nNothing has changed mathematically — we’ve just rewritten the same optimization in terms of factors. But this is the general MAP problem, and it’s exactly the form every SLAM backend is actually solving.",
+    "objectID": "chapters/factor-graphs-slam/gradient_newton.html#newtons-method",
+    "href": "chapters/factor-graphs-slam/gradient_newton.html#newtons-method",
+    "title": "Optimization Methods",
+    "section": "2 Newton’s Method",
+    "text": "2 Newton’s Method\n\n2.1 Using Curvature, Not Just Slope\nThis time we use the full second-order Taylor expansion:\n\\[\nJ(x+\\delta) = J(x) + g^T \\delta + \\frac{1}{2}\\delta^T H \\delta\n\\]\nwhere \\(g = \\nabla J\\) and \\(H = \\nabla^2 J\\).\nTo find the minimum, differentiate with respect to \\(\\delta\\) and set the result to zero:\n\\[\ng + H\\delta = 0 \\quad \\Rightarrow \\quad \\delta = -H^{-1} g\n\\]\n\n\n\n\n\n\nImportantNewton’s Method\n\n\n\n\\[\n\\delta = -H^{-1} g\n\\]\nUnlike gradient descent, this uses curvature — the true Hessian \\(\\nabla^2 J\\) — rather than just the slope. That extra information is what lets Newton’s method converge dramatically faster near the optimum: it doesn’t just know which way is downhill, it knows how the slope itself is changing, so it can take a much better-sized step.\n\n\n\n\n2.2 Why We Don’t Actually Use Newton’s Method\n\n\n\n\n\n\nWarningThe catch\n\n\n\nComputing the true Hessian is very expensive, especially for problems with thousands of unknowns like SLAM. So instead, we look for a way to approximate the Hessian — which is exactly what Gauss-Newton does.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Least Squares and MAP Estimation"
+      "Optimization Methods"
     ]
   },
   {
-    "objectID": "chapters/factor-graphs-slam/least_squares.html#modeling-measurement-noise",
-    "href": "chapters/factor-graphs-slam/least_squares.html#modeling-measurement-noise",
-    "title": "Least Squares and MAP Estimation",
-    "section": "Modeling Measurement Noise",
-    "text": "Modeling Measurement Noise\nEvery real sensor measurement is a mix of a true underlying signal and noise. We model this as:\n\\[\nz = h(x) + \\eta\n\\]\n\n\\(h(x)\\) is the prediction function — it comes from pure geometry and physics, with no randomness involved.\n\\(\\eta\\) is the noise, assumed Gaussian: \\(\\eta \\sim \\mathcal{N}(0, \\Sigma)\\).\n\nThat Gaussian assumption on the noise is doing a lot of work here — it’s what eventually lets “most probable trajectory” collapse into “minimize sum of squared errors.”\nGiven this noise model, the probability of observing \\(z\\) given a state \\(x\\) is:\n\\[\np(z \\mid x) = \\mathcal{N}(z;\\, h(x), \\Sigma)\n\\]\nExpanding the Gaussian density explicitly:\n\\[\np(z \\mid x) = \\frac{1}{\\sqrt{2\\pi\\Sigma}}\n\\exp\\left(-\\frac{1}{2} [z - h(x)]^T \\Sigma^{-1} [z - h(x)]\\right)\n\\]",
+    "objectID": "chapters/factor-graphs-slam/gradient_newton.html#gauss-newton",
+    "href": "chapters/factor-graphs-slam/gradient_newton.html#gauss-newton",
+    "title": "Optimization Methods",
+    "section": "3 Gauss-Newton",
+    "text": "3 Gauss-Newton\nRecall the cost function in terms of the whitened residual:\n\\[\nJ(x) = r(x)^T \\Sigma^{-1} r(x), \\qquad r(x) = z - h(x)\n\\]\n\n3.1 Step 1: Linearize\n\\[\nr(x + \\delta) \\approx r(x) + J_x \\delta, \\qquad J_x = \\frac{\\partial r}{\\partial x}\n\\]\n\n\n3.2 Step 2: Substitute Into the Cost\n\\[\nJ(\\delta) = (r + J_x \\delta)^T \\Sigma^{-1} (r + J_x \\delta)\n\\]\n\n\n3.3 Step 3: Expand\n\\[\nJ(\\delta) = r^T \\Sigma^{-1} r + 2\\delta^T J_x^T \\Sigma^{-1} r + \\delta^T J_x^T \\Sigma^{-1} J_x \\delta\n\\]\n\n\n3.4 Step 4: Differentiate and Set to Zero\nDifferentiating with respect to \\(\\delta\\) and setting the result to zero gives:\n\\[\nJ_x^T \\Sigma^{-1} J_x \\, \\delta = -J_x^T \\Sigma^{-1} r\n\\]\nThis is the Gauss-Newton equation — mathematically correct as-is, but usually rewritten in a cleaner form.\n\n\n3.5 Step 5: Whitening (Removing \\(\\Sigma\\))\nDefine:\n\\[\nA = \\Sigma^{-\\frac{1}{2}} J, \\qquad b = \\Sigma^{-\\frac{1}{2}} r\n\\]\nso that:\n\\[\nA^T A = J^T \\Sigma^{-1} J, \\qquad A^T b = J^T \\Sigma^{-1} r\n\\]\nSubstituting these in gives the familiar form:\n\n\n\n\n\n\nImportantThe Gauss-Newton Update\n\n\n\n\\[\nA^T A \\, \\delta = -A^T b\n\\]\nThis is exactly the normal equations from before — the form most widely used in practice, including in libraries like GTSAM, and the same system solved via Cholesky or QR factorization.\n\n\n\n\n3.6 The Key Insight: We Never Computed the Hessian\n\n\n\n\n\n\nTipWhy this works\n\n\n\nWe never actually formed the true Hessian \\(\\nabla^2 J\\). Instead, Gauss-Newton approximates it using only first-derivative information:\n\\[\nH \\approx J^T \\Sigma^{-1} J\n\\]\nThis is the whole trick behind Gauss-Newton — it gets Newton-like convergence behavior without ever paying the cost of computing second derivatives, by exploiting the specific least-squares structure of the cost function.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Least Squares and MAP Estimation"
+      "Optimization Methods"
     ]
   },
   {
-    "objectID": "chapters/factor-graphs-slam/least_squares.html#reading-the-pieces",
-    "href": "chapters/factor-graphs-slam/least_squares.html#reading-the-pieces",
-    "title": "Least Squares and MAP Estimation",
-    "section": "Reading the Pieces",
-    "text": "Reading the Pieces\n\n\\(z - h(x)\\) is the residual: actual measurement minus predicted measurement. It’s a direct measure of how wrong our current estimate is.\nInside the exponent we have the squared residual, weighted by \\(\\Sigma^{-1}\\).\n\\(\\Sigma\\) embeds the noise — it’s the covariance of the measurement.\n\\(\\Sigma^{-1}\\) is called the information matrix, since it tells us how much confidence we place in this measurement (a tighter covariance means more information).",
+    "objectID": "chapters/factor-graphs-slam/gradient_newton.html#the-full-gauss-newton-system",
+    "href": "chapters/factor-graphs-slam/gradient_newton.html#the-full-gauss-newton-system",
+    "title": "Optimization Methods",
+    "section": "4 The Full Gauss-Newton System",
+    "text": "4 The Full Gauss-Newton System\nSumming across all factors, the actual system being solved is:\n\\[\n\\left( \\sum_i J_i^T \\Sigma_i^{-1} J_i \\right) \\delta = -\\sum_i J_i^T \\Sigma_i^{-1} r_i\n\\]\ngiving us the Hessian approximation:\n\\[\nH = \\sum_i J_i^T \\Sigma_i^{-1} J_i\n\\]\nCompare this to the true Hessian, which includes an extra term:\n\\[\n\\nabla^2 J = \\sum_i J_i^T \\Sigma_i^{-1} J_i + \\sum_i r_i \\nabla^2 r_i\n\\]\nThe Gauss-Newton approximation simply drops that second term.\n\n\n\n\n\n\nNoteWhy this is justified\n\n\n\nThis is justified by an assumption about near convergence: as \\(x \\to x^*\\), the residuals \\(r_i \\to 0\\), so the dropped term \\(r_i \\nabla^2 r_i\\) becomes negligible too. Near the solution, this approximation is excellent.\n\n\n\n4.1 Properties of the Approximate Hessian\nThe approximate Hessian \\(H = J^T \\Sigma^{-1} J\\) has two useful properties:\n\nSymmetric\nPositive semi-definite\n\nIn estimation theory, \\(J^T \\Sigma^{-1} J\\) is also called the Information Matrix — and this connects directly back to something practically useful: the covariance of the estimated state:\n\\[\nP \\approx H^{-1} \\approx \\left(J^T \\Sigma^{-1} J\\right)^{-1}\n\\]\nThis is how SLAM systems report uncertainty on the final estimate — not just the best-guess pose, but how confident we should be in it.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Least Squares and MAP Estimation"
+      "Optimization Methods"
     ]
   },
   {
-    "objectID": "chapters/factor-graphs-slam/least_squares.html#the-mahalanobis-distance",
-    "href": "chapters/factor-graphs-slam/least_squares.html#the-mahalanobis-distance",
-    "title": "Least Squares and MAP Estimation",
-    "section": "The Mahalanobis Distance",
-    "text": "The Mahalanobis Distance\nThe weighted squared residual has a name:\n\\[\n[z - h(x)]^T \\Sigma^{-1} [z - h(x)] = \\text{Mahalanobis distance squared}\n\\]\nUnlike ordinary Euclidean distance, Mahalanobis distance accounts for how uncertain each dimension of the measurement is — a large deviation in a noisy direction counts for less than the same deviation in a precise direction. We give it its own compact notation:\n\\[\n\\|e\\|^2_\\Sigma = e^T \\Sigma^{-1} e\n\\]\nThis is exactly the quantity each factor in a SLAM problem is scoring.",
+    "objectID": "chapters/factor-graphs-slam/gradient_newton.html#why-can-gauss-newton-fail",
+    "href": "chapters/factor-graphs-slam/gradient_newton.html#why-can-gauss-newton-fail",
+    "title": "Optimization Methods",
+    "section": "5 Why Can Gauss-Newton Fail?",
+    "text": "5 Why Can Gauss-Newton Fail?\nThe approximation only holds well near the optimum. Far from it, residuals \\(r_i\\) are not small, so \\(r_i \\nabla^2 r_i\\) is no longer negligible — the approximate Hessian becomes a poor stand-in for the true one.\n\nGauss-Newton can diverge when initialized far from the solution.\n\nThis is the core motivation for Levenberg-Marquardt.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Least Squares and MAP Estimation"
+      "Optimization Methods"
     ]
   },
   {
-    "objectID": "chapters/factor-graphs-slam/least_squares.html#putting-the-factors-together",
-    "href": "chapters/factor-graphs-slam/least_squares.html#putting-the-factors-together",
-    "title": "Least Squares and MAP Estimation",
-    "section": "Putting the Factors Together",
-    "text": "Putting the Factors Together\nRecall the MAP objective in terms of factors:\n\\[\nx_{MAP} = \\operatorname*{argmax}_{x} \\; \\prod_i \\phi_i(x_i)\n\\]\nGiven the Gaussian noise model, each factor takes the form:\n\\[\n\\phi_i(x_i) \\propto \\exp\\left(-\\frac{1}{2} \\|z_i - h_i(x_i)\\|^2_{\\Sigma_i}\\right)\n\\]\nwhich we can write more compactly as:\n\\[\n\\phi_i(x_i) = c_i \\cdot e^{-E_i}\n\\]\nwhere \\(E_i = \\frac{1}{2}\\|z_i - h_i(x_i)\\|^2_{\\Sigma_i}\\) is the weighted squared error for factor \\(i\\).",
+    "objectID": "chapters/factor-graphs-slam/gradient_newton.html#levenberg-marquardt",
+    "href": "chapters/factor-graphs-slam/gradient_newton.html#levenberg-marquardt",
+    "title": "Optimization Methods",
+    "section": "6 Levenberg-Marquardt",
+    "text": "6 Levenberg-Marquardt\nThe question LM asks: can we make the Hessian safer to invert?\nInstead of solving the plain Gauss-Newton system \\(H\\delta = -g\\), we solve a modified version:\n\n\n\n\n\n\nImportantThe LM Update\n\n\n\n\\[\n(H + \\lambda I)\\, \\delta = -g\n\\]\nAdding \\(\\lambda I\\) to \\(H\\) only changes the diagonal entries of the matrix — everything off-diagonal is untouched.\n\n\n\n6.1 Eigenvalue Interpretation\nTo see why this damping term helps, suppose the Hessian has an eigen decomposition:\n\\[\nH = V \\Lambda V^T, \\qquad \\Lambda = \\operatorname{diag}(\\mu_1, \\mu_2, \\dots, \\mu_n)\n\\]\nSince \\(VV^T = I\\):\n\\[\nH + \\lambda I = V(\\Lambda + \\lambda I)V^T\n\\]\nSo the eigenvalues simply become \\(\\mu_i + \\lambda\\).\nWhy is this useful? Suppose the Hessian’s eigenvalues are \\(0.0001,\\ 3,\\ 7,\\ 15\\). That tiny eigenvalue is dangerous — small eigenvalues cause instability when inverting the matrix (near-zero eigenvalues blow up in the inverse). But if we set \\(\\lambda = 10\\):\n\\[\n\\text{eigenvalues} \\to 10.0001,\\ 13,\\ 17,\\ 25\n\\]\nThe matrix becomes well-conditioned and stable.\n\n\n6.2 Another Way to See It\nIn Newton’s method, \\(\\delta = H^{-1}g\\). If one eigenvalue is very small, \\(\\delta\\) becomes huge — an unreliable, oversized step. LM prevents this by ensuring no eigenvalue of \\((H + \\lambda I)\\) ever gets too close to zero.\n\n\n6.3 LM’s Two Behaviors\nLM interpolates smoothly between two extremes, depending on \\(\\lambda\\):\n\n\n\n\n\n\n\n\n\nRegime\nWhat happens to \\(H + \\lambda I\\)\nUpdate reduces to\nBehaves like\n\n\n\n\n\\(\\lambda \\gg\\) every eigenvalue \\(\\mu_i\\)\n\\(H + \\lambda I \\approx \\lambda I\\)\n\\(\\delta = -\\dfrac{1}{\\lambda}g = -\\alpha g\\)\nGradient Descent\n\n\n\\(\\lambda \\to 0\\)\n\\(H + \\lambda I \\to H\\)\n\\(H\\delta = -g\\)\nGauss-Newton\n\n\n\n\n\n\n\n\n\nImportantThe elegant part\n\n\n\n\\[\n\\boxed{\\text{Large } \\lambda \\to \\text{Gradient Descent} \\qquad \\text{Small } \\lambda \\to \\text{Gauss-Newton}}\n\\]\nLM gets gradient descent’s safety when far from the solution, and Gauss-Newton’s speed once close to it.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Least Squares and MAP Estimation"
+      "Optimization Methods"
     ]
   },
   {
-    "objectID": "chapters/factor-graphs-slam/least_squares.html#the-product-problem",
-    "href": "chapters/factor-graphs-slam/least_squares.html#the-product-problem",
-    "title": "Least Squares and MAP Estimation",
-    "section": "The Product Problem",
-    "text": "The Product Problem\nHere’s a practical issue: the MAP objective is a product of many exponential terms:\n\\[\nx_{MAP} \\to \\exp(-a) \\cdot \\exp(-b) \\cdot \\exp(-c) \\cdots\n\\]\nOptimizers don’t work well with long products — products of many small numbers underflow numerically, and their derivatives get messy. The fix is to take logarithms, which turns the product into a sum:\n\\[\n\\begin{aligned}\n\\prod_i \\exp(-E_i)\n\\;\\longrightarrow\\;\n& \\log\\left(\\prod_i \\exp(-E_i)\\right) \\\\\n\\;\\longrightarrow\\;\n& \\sum_i \\log(\\exp(-E_i)) \\\\\n\\;\\longrightarrow\\;\n& \\sum_i (-E_i)\n\\end{aligned}\n\\]\nSince \\(\\log\\) is monotonic, maximizing the product is equivalent to maximizing the log-sum. And flipping the sign turns a maximization into a minimization:\n\\[\n\\operatorname*{argmax}\\left(-\\sum_i E_i\\right)\n= \\operatorname*{argmin}\\left(\\sum_i E_i\\right)\n\\]\nThis is the final piece connecting everything: maximizing the posterior probability is exactly equivalent to minimizing a sum of weighted squared residuals — which is precisely the least-squares objective we started with back in the Least Squares section.",
+    "objectID": "chapters/factor-graphs-slam/gradient_newton.html#how-to-choose-lambda",
+    "href": "chapters/factor-graphs-slam/gradient_newton.html#how-to-choose-lambda",
+    "title": "Optimization Methods",
+    "section": "7 How to Choose \\(\\lambda\\)?",
+    "text": "7 How to Choose \\(\\lambda\\)?\nLM adapts \\(\\lambda\\) on the fly, iteration by iteration:\n\nInitially, assume some starting value of \\(\\lambda\\).\nAt the current cost \\(J(x_k)\\), compute the update \\(\\delta\\), then the new state \\(x_{new} = x_k + \\delta\\), and the new cost \\(J(x_{new})\\).\nCompare the new cost to the old one, and adjust \\(\\lambda\\) accordingly:\n\n\n\n\n\n\n\n\n\nOutcome\nCondition\nResponse\n\n\n\n\nGood step\n\\(J(x_{new}) &lt; J(x_k)\\)\nThe quadratic approximation was accurate — decrease \\(\\lambda\\), behave more like Gauss-Newton\n\n\nBad step\n\\(J(x_{new}) &gt; J(x_k)\\)\nThe approximation was untrustworthy — increase \\(\\lambda\\), behave more like gradient descent\n\n\n\n\n\n\n\n\n\nNote\\(\\lambda\\) as a trust region\n\n\n\nThe value of \\(\\lambda\\) effectively defines a trust region: a small \\(\\lambda\\) means we trust the quadratic (Gauss-Newton) approximation over a larger region, while a large \\(\\lambda\\) means we only trust it very locally.\n\n\nRecall the two quantities being computed each iteration (see the full Gauss-Newton system above):\n\\[\nH = \\sum_i J_i^T \\Sigma_i^{-1} J_i, \\qquad g = \\sum_i J_i^T \\Sigma_i^{-1} r_i\n\\]",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Least Squares and MAP Estimation"
+      "Optimization Methods"
     ]
   },
   {
-    "objectID": "chapters/factor-graphs-slam/least_squares.html#from-map-to-a-concrete-optimization-problem",
-    "href": "chapters/factor-graphs-slam/least_squares.html#from-map-to-a-concrete-optimization-problem",
-    "title": "Least Squares and MAP Estimation",
-    "section": "From MAP to a Concrete Optimization Problem",
-    "text": "From MAP to a Concrete Optimization Problem\nTaking the MAP formulation and working through the Gaussian noise assumption from the previous section eventually lands us here:\n\\[\nx_{MAP} = \\operatorname*{argmin}_{x} \\sum_i \\| z_i - h_i(x_i) \\|^2_{\\Sigma_i}\n\\quad \\to \\quad \\text{Least squares}\n\\]\nThis is a least squares problem. But there’s a catch: \\(h_i(x)\\) — the function that predicts a measurement from a state — is generally a non-linear function of the state. Bearing angles, ranges, rotations: none of these are linear in \\(x\\). So what we actually have is a non-linear least squares problem.",
+    "objectID": "chapters/factor-graphs-slam/linearization.html",
+    "href": "chapters/factor-graphs-slam/linearization.html",
+    "title": "Linearization & Whitening",
+    "section": "",
+    "text": "Solving a non-linear problem numerically comes down to five repeated steps — this is the gist of Gauss-Newton / LM:\n\nLinearize the non-linear residuals\nForm a large sparse linear system\nSolve for a small update \\(\\delta\\)\nUpdate the state\nRepeat until convergence\n\nAt a higher level, the whole pipeline looks like:\nNon-linear problem → Taylor expansion → linear least squares → normal equations → solve via Cholesky/QR → update state → repeat\nThe one idea underlying all of it: approximate the non-linear function locally with a straight line, solve that easy linear problem, then re-linearize around the new estimate and repeat. Each iteration gets closer to the true non-linear optimum.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Least Squares and MAP Estimation"
+      "Linearization & Whitening"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/linearization.html#the-iterative-recipe",
+    "href": "chapters/factor-graphs-slam/linearization.html#the-iterative-recipe",
+    "title": "Linearization & Whitening",
+    "section": "",
+    "text": "Solving a non-linear problem numerically comes down to five repeated steps — this is the gist of Gauss-Newton / LM:\n\nLinearize the non-linear residuals\nForm a large sparse linear system\nSolve for a small update \\(\\delta\\)\nUpdate the state\nRepeat until convergence\n\nAt a higher level, the whole pipeline looks like:\nNon-linear problem → Taylor expansion → linear least squares → normal equations → solve via Cholesky/QR → update state → repeat\nThe one idea underlying all of it: approximate the non-linear function locally with a straight line, solve that easy linear problem, then re-linearize around the new estimate and repeat. Each iteration gets closer to the true non-linear optimum.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Linearization & Whitening"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/linearization.html#linearizing-the-cost-function",
+    "href": "chapters/factor-graphs-slam/linearization.html#linearizing-the-cost-function",
+    "title": "Linearization & Whitening",
+    "section": "2 Linearizing the Cost Function",
+    "text": "2 Linearizing the Cost Function\n\n2.1 Taylor Expansion, the Engine Behind It All\nThe linearization step comes straight from a first-order Taylor expansion:\n\\[\nh_i(x_i) = h_i(x_i^0 + \\delta_i) \\approx h_i(x_i^0) + H_i \\delta_i\n\\]\n\n\n2.2 A Simple (Linear) Warm-Up Example\nBefore applying this to something genuinely non-linear, it helps to see the mechanics on something simple. Take \\(f(x) = x^2\\) with a current estimate \\(x_0 = 2\\):\n\\[\nf(x) = f(x_0) + f'(x_0)(x - x_0) + \\dots \\quad \\text{(ignoring higher-order terms)}\n\\]\n\\[\nf(x) \\approx f(x_0) + f'(x_0)(x - x_0)\n\\]\nSubstituting \\(x_0 = 2\\), so \\(f(x_0) = 4\\) and \\(f'(x_0) = 4\\):\n\\[\nf(x) \\approx 4 + 4(x - 2)\n\\]\nThat’s just the tangent line at \\(x_0\\) — a linear stand-in for the true curve, valid near \\(x_0\\).\n\n\n2.3 The Key Mental Shift: Optimize \\(\\delta\\), Not \\(x\\)\nThis is the part that trips people up initially: we don’t optimize \\(x\\) directly — we optimize \\(\\delta\\), the correction to our current estimate:\n\\[\n\\delta = x - x_0\n\\]\nThis is easier to optimize because, near \\(x_0\\), the problem becomes linear in \\(\\delta\\). Once we solve for \\(\\delta\\), we simply update \\(x \\leftarrow x_0 + \\delta\\) and repeat the whole process at the new estimate.\n\n\n2.4 The Jacobian\nThe matrix \\(H_i\\) appearing in the linearization is the Jacobian:\n\\[\nH_i = \\frac{\\partial h_i}{\\partial x_i} \\; \\text{evaluated at } x_i^0\n\\]\n\n\n\n\n\n\nTipIntuition\n\n\n\nJacobian = a local sensitivity of the measurement to each unknown variable. Each entry of \\(H_i\\) just answers: if I nudge this one unknown a tiny bit, how much does the predicted measurement move?\n\n\nWorked example: suppose the unknowns are a pose and a landmark position:\n\\[\nx = \\begin{bmatrix} x_P \\\\ y_P \\\\ \\theta_P \\\\ x_l \\\\ y_l \\end{bmatrix}\n\\qquad\nh(P, l) = \\operatorname{atan2}(y_l - y_P,\\; x_l - x_P)\n\\]\nThen the Jacobian is a row vector, one partial derivative per unknown:\n\\[\nH = \\begin{bmatrix} \\dfrac{\\partial h}{\\partial x_P} & \\dfrac{\\partial h}{\\partial y_P} & \\dfrac{\\partial h}{\\partial \\theta_P} & \\dfrac{\\partial h}{\\partial x_l} & \\dfrac{\\partial h}{\\partial y_l} \\end{bmatrix}\n\\]\nEach column corresponds to one equation’s sensitivity to one unknown — stack these rows across all measurements and you get the full Jacobian matrix used in the linear system each iteration solves.\n\n\n2.5 Substituting the Linearization Back In\nPlugging the Taylor expansion back into the least squares cost:\n\\[\n\\sum_i \\| z_i - h_i(x_i) \\|^2 = \\sum_i \\| z_i - h_i(x_i^0) - H_i \\delta_i \\|^2\n\\]\nThe problem is now linear. This is the whole point of linearizing — the unknown \\(\\delta\\) only appears inside the term \\(H_i \\delta_i\\), and that’s exactly the form (\\(H\\delta\\)) that linear algebra knows how to solve directly: a vector/matrix product.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Linearization & Whitening"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/linearization.html#whitening-the-residuals",
+    "href": "chapters/factor-graphs-slam/linearization.html#whitening-the-residuals",
+    "title": "Linearization & Whitening",
+    "section": "3 Whitening the Residuals",
+    "text": "3 Whitening the Residuals\nRight now each factor’s cost still carries its covariance-weighted norm:\n\\[\n\\|e\\|^2_\\Sigma = e^T \\Sigma^{-1} e\n\\]\nThe idea behind whitening is to fold that covariance weighting directly into the residual, so we’re left with an ordinary (unweighted) squared norm — the standard form every least-squares solver expects.\nSplitting \\(\\Sigma^{-1}\\) into two symmetric square-root factors:\n\\[\ne^T \\Sigma^{-1} e = e^T \\left(\\Sigma^{-\\frac{1}{2}}\\right)^T \\Sigma^{-\\frac{1}{2}} e = \\left(\\Sigma^{-\\frac{1}{2}} e\\right)^T \\left(\\Sigma^{-\\frac{1}{2}} e\\right)\n\\]\n\\[\n\\therefore \\; \\|e\\|^2_\\Sigma = \\left\\| \\Sigma^{-\\frac{1}{2}} e \\right\\|^2\n\\]\nIn other words: instead of weighting the norm, we can just rescale the residual itself by \\(\\Sigma^{-\\frac{1}{2}}\\), and then take a plain Euclidean norm. That rescaling is the “whitening” — it stretches or shrinks each residual dimension according to how much we trust it, so a highly uncertain measurement contributes less to the final cost.\nApplying this to our linearized residual:\n\\[\n\\left\\| \\Sigma_i^{-\\frac{1}{2}} \\left[ z_i - h_i(x_i^0) - H_i \\delta_i \\right] \\right\\|^2\n\\]\n\n3.1 Defining \\(A_i\\) and \\(b_i\\)\nTo tidy this up, we define:\n\\[\nA_i = \\Sigma_i^{-\\frac{1}{2}} H_i, \\qquad b_i = \\Sigma_i^{-\\frac{1}{2}} \\left(z_i - h_i(x_i^0)\\right)\n\\]\n\n\n\nTerm\nMeaning\n\n\n\n\n\\(A_i\\)\nthe Jacobian \\(H_i\\), rescaled by the whitening factor\n\n\n\\(b_i\\)\nthe residual at the current estimate, rescaled the same way",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Linearization & Whitening"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/linearization.html#the-linear-system",
+    "href": "chapters/factor-graphs-slam/linearization.html#the-linear-system",
+    "title": "Linearization & Whitening",
+    "section": "4 The Linear System",
+    "text": "4 The Linear System\nWith that substitution, the whole optimization collapses into a clean, standard linear least squares form:\n\\[\n\\delta^{*} = \\operatorname*{argmin}_{\\delta} \\sum_i \\| A_i \\delta_i - b_i \\|^2\n\\]\nStacking every factor’s \\(A_i\\) and \\(b_i\\) together gives one big, sparse linear system:\n\\[\nA\\delta = b\n\\]\nAnd solving that system is the actual computational core of every SLAM backend — everything before this was about getting to this system; everything after is about solving it efficiently.\n\n\n\n\n\n\n\n\nSymbol\nName\nWhat it is\n\n\n\n\n\\(A\\)\nstacked Jacobian\nevery factor’s whitened sensitivity matrix, stacked together\n\n\n\\(b\\)\nstacked residual vector\nevery factor’s whitened residual, stacked together\n\n\n\\(\\delta\\)\nstate correction\nwhat we solve for, then use to update our estimate\n\n\n\n\n\n\n\n\n\nNoteWhy “huge” and why “sparse”\n\n\n\n\nHuge — stacked across every factor, the system spans every pose and every landmark in the whole trajectory.\nSparse — most entries of \\(A\\) are zero. A factor only touches the handful of variables it directly constrains, so non-zero entries only appear where an actual constraint exists between variables. This is the same sparsity we saw in the factor graph structure — it’s what makes solving a system this large even feasible.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Linearization & Whitening"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/linearization.html#why-not-just-solve-adelta-b-directly",
+    "href": "chapters/factor-graphs-slam/linearization.html#why-not-just-solve-adelta-b-directly",
+    "title": "Linearization & Whitening",
+    "section": "5 Why Not Just Solve \\(A\\delta = b\\) Directly?",
+    "text": "5 Why Not Just Solve \\(A\\delta = b\\) Directly?\nIt’s tempting to think we’re done once we have the linear system \\(A\\delta = b\\) — just solve it and move on. But there’s a problem:\n\nThere is usually no exact solution.\n\nThis makes sense once you think about where \\(A\\) and \\(b\\) actually come from. Different sensors give different, slightly inconsistent values — no single \\(\\delta\\) satisfies every constraint simultaneously. So instead of solving the system exactly, we find the solution with the smallest total error.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Linearization & Whitening"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/linearization.html#setting-up-the-cost",
+    "href": "chapters/factor-graphs-slam/linearization.html#setting-up-the-cost",
+    "title": "Linearization & Whitening",
+    "section": "6 Setting Up the Cost",
+    "text": "6 Setting Up the Cost\nThe cost we want to minimize is:\n\\[\nJ(\\delta) = \\|A\\delta - b\\|^2\n\\]\nExpanding this out:\n\\[\nJ(\\delta) = (A\\delta - b)^T (A\\delta - b) = (\\delta^T A^T - b^T)(A\\delta - b)\n\\]\n\\[\nJ(\\delta) = \\delta^T A^T A \\delta - 2\\delta^T A^T b + b^T b\n\\]\nThis is now a quadratic function — the matrix version of the familiar \\(ax^2 + bx + c\\) from single-variable calculus.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Linearization & Whitening"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/linearization.html#minimizing-the-cost",
+    "href": "chapters/factor-graphs-slam/linearization.html#minimizing-the-cost",
+    "title": "Linearization & Whitening",
+    "section": "7 Minimizing the Cost",
+    "text": "7 Minimizing the Cost\nFor a quadratic, minimizing is straightforward: take the derivative and set it to zero. Differentiating \\(J(\\delta)\\) with respect to \\(\\delta\\) and setting the result to zero gives:\n\\[\nA^T A \\, \\delta = A^T b\n\\]\n\n\n\n\n\n\nImportantThe Normal Equations\n\n\n\n\\[\nA^T A \\, \\delta = A^T b\n\\]\nThis is the linear system that actually gets solved at every iteration of the optimizer. Everything up to this point — linearization, whitening, stacking factors — exists to produce this one equation.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Linearization & Whitening"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/linearization.html#why-normal",
+    "href": "chapters/factor-graphs-slam/linearization.html#why-normal",
+    "title": "Linearization & Whitening",
+    "section": "8 Why “Normal”?",
+    "text": "8 Why “Normal”?\nThe name isn’t arbitrary — it comes directly from geometry.\nPicture every column of \\(A\\) as spanning some subspace. Since \\(b\\) generally doesn’t lie exactly inside that column space (that’s exactly why there’s no exact solution to \\(A\\delta = b\\)), the least squares solution instead projects \\(b\\) onto the column space — finding the closest point in that space to \\(b\\).\nThat leaves an error vector:\n\\[\nr = b - A\\delta\n\\]\n\n\n\n\n\n\nNoteThe geometric picture\n\n\n\nAt the optimal \\(\\delta\\), the error vector \\(r\\) becomes perpendicular (normal) to the column space of \\(A\\). That perpendicularity condition is exactly what the normal equations enforce — which is where they get their name.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Linearization & Whitening"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/linearization.html#the-information-matrix",
+    "href": "chapters/factor-graphs-slam/linearization.html#the-information-matrix",
+    "title": "Linearization & Whitening",
+    "section": "9 The Information Matrix",
+    "text": "9 The Information Matrix\nWe define:\n\\[\n\\Lambda = A^T A\n\\]\nwhere \\(\\Lambda\\) is called the information matrix, also known as the Hessian of the cost function.\n\\(A^T A\\) has two properties that matter a great deal for how we solve the system:\n\n\n\n\n\n\n\n\nProperty\nStatement\nWhy it matters\n\n\n\n\nSymmetric\n\\(\\Lambda^T = \\Lambda\\)\nhalves the storage and work needed to represent \\(\\Lambda\\)\n\n\nPositive semi-definite\n\\(x^T A^T A x \\geq 0\\) for all \\(x\\)\nguarantees the quadratic cost has a well-defined minimum, not a saddle point\n\n\n\nThat positive semi-definiteness is what makes the system well-behaved enough to allow Cholesky factorization — a fast, numerically stable way to solve the normal equations.\n\n\n\n\n\n\nWarningApproximation, not the true Hessian\n\n\n\nThe true Hessian of the cost function is \\(\\dfrac{\\partial^2 J}{\\partial x^2}\\), but in practice we approximate it with \\(A^T A\\).\nThis approximation is exactly what separates Gauss-Newton from full Newton’s method: Gauss-Newton never computes second derivatives directly. That saves a lot of computation, at the cost of \\(A^T A\\) only being a good approximation of the true Hessian near the solution.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Linearization & Whitening"
     ]
   },
   {
     "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html",
     "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html",
-    "title": "Visualizing SLAM with Factor Graphs",
+    "title": "Visualizing Factor Graphs",
     "section": "",
     "text": "We’re solving for a state vector containing both robot poses and landmarks:\n\\[\n\\mathbf{x} = \\begin{bmatrix} P_1 \\\\ P_2 \\\\ P_3 \\\\ l_1 \\\\ l_2 \\end{bmatrix}\n\\]\nwhere \\(P_i\\) are robot poses at different times and \\(l_i\\) are landmark positions.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Visualizing SLAM with Factor Graphs"
+      "Visualizing Factor Graphs"
     ]
   },
   {
     "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#the-unknowns",
     "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#the-unknowns",
-    "title": "Visualizing SLAM with Factor Graphs",
+    "title": "Visualizing Factor Graphs",
     "section": "",
     "text": "We’re solving for a state vector containing both robot poses and landmarks:\n\\[\n\\mathbf{x} = \\begin{bmatrix} P_1 \\\\ P_2 \\\\ P_3 \\\\ l_1 \\\\ l_2 \\end{bmatrix}\n\\]\nwhere \\(P_i\\) are robot poses at different times and \\(l_i\\) are landmark positions.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Visualizing SLAM with Factor Graphs"
+      "Visualizing Factor Graphs"
     ]
   },
   {
     "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#known-vs.-unknown",
     "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#known-vs.-unknown",
-    "title": "Visualizing SLAM with Factor Graphs",
-    "section": "Known vs. unknown",
-    "text": "Known vs. unknown\nThe measurements are what’s “known” — but here’s the key idea that trips people up at first: every measurement carries uncertainty. A LiDAR scan doesn’t tell you “the wall is exactly 3.000m away.” It tells you “the wall is probably around 3m away, plus or minus some noise.”\nThat uncertainty is why SLAM is fundamentally a probability problem, not a geometry problem.\n\nThe robot never knows — it only believes.\n\nThis isn’t just a nice turn of phrase — it’s the mathematical foundation of the whole field. The robot maintains a belief: a probability distribution over where it might be, not a single certain answer.",
+    "title": "Visualizing Factor Graphs",
+    "section": "2 Known vs. unknown",
+    "text": "2 Known vs. unknown\nThe measurements are what’s “known” — but here’s the key idea that trips people up at first: every measurement carries uncertainty. A LiDAR scan doesn’t tell you “the wall is exactly 3.000m away.” It tells you “the wall is probably around 3m away, plus or minus some noise.”\nThat uncertainty is why SLAM is fundamentally a probability problem, not a geometry problem.\n\nThe robot never knows — it only believes.\n\nThis isn’t just a nice turn of phrase — it’s the mathematical foundation of the whole field. The robot maintains a belief: a probability distribution over where it might be, not a single certain answer.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Visualizing SLAM with Factor Graphs"
+      "Visualizing Factor Graphs"
     ]
   },
   {
     "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-probabilities-must-sum-to-one",
     "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-probabilities-must-sum-to-one",
-    "title": "Visualizing SLAM with Factor Graphs",
-    "section": "Why probabilities must sum to one",
-    "text": "Why probabilities must sum to one\n\\[\n\\int p(x)\\,dx = 1\n\\]\nThis says: all possibilities sum to 1. In plain terms — the robot must exist somewhere. Its belief might be spread out and uncertain, but that uncertainty is distributed over the full space of possibilities, and it always adds up to total certainty that some pose is the true one.\nThis single constraint is what turns “the robot is confused about its position” into something we can actually compute with.",
+    "title": "Visualizing Factor Graphs",
+    "section": "3 Why probabilities must sum to one",
+    "text": "3 Why probabilities must sum to one\n\\[\n\\int p(x)\\,dx = 1\n\\]\nThis says: all possibilities sum to 1. In plain terms — the robot must exist somewhere. Its belief might be spread out and uncertain, but that uncertainty is distributed over the full space of possibilities, and it always adds up to total certainty that some pose is the true one.\nThis single constraint is what turns “the robot is confused about its position” into something we can actually compute with.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Visualizing SLAM with Factor Graphs"
+      "Visualizing Factor Graphs"
     ]
   },
   {
     "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#the-state-vector",
     "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#the-state-vector",
-    "title": "Visualizing SLAM with Factor Graphs",
-    "section": "The State Vector",
-    "text": "The State Vector\nEverything SLAM is trying to solve for lives in one big state vector, stacking robot poses and landmark positions together:\n\\[\n\\mathbf{x} = \\begin{bmatrix} P_1 \\\\ P_2 \\\\ P_3 \\\\ l_1 \\\\ l_2 \\end{bmatrix}\n\\rightarrow\n\\begin{bmatrix} x_1 \\\\ y_1 \\\\ \\theta_1 \\\\ x_2 \\\\ y_2 \\end{bmatrix}\n\\]\nEach pose is \\([x, y, \\theta]\\), and each landmark is \\([x, y]\\). Note that this is a vector, not a matrix — a flat list of all the unknowns concatenated together.\nThis matters because it tells you how the optimization actually works: it doesn’t solve for the robot’s path first and then the map, or vice versa. It solves for every unknown at once, jointly.",
+    "title": "Visualizing Factor Graphs",
+    "section": "4 The State Vector",
+    "text": "4 The State Vector\nEverything SLAM is trying to solve for lives in one big state vector, stacking robot poses and landmark positions together:\n\\[\n\\mathbf{x} = \\begin{bmatrix} P_1 \\\\ P_2 \\\\ P_3 \\\\ l_1 \\\\ l_2 \\end{bmatrix}\n\\rightarrow\n\\begin{bmatrix} x_1 \\\\ y_1 \\\\ \\theta_1 \\\\ x_2 \\\\ y_2 \\end{bmatrix}\n\\]\nEach pose is \\([x, y, \\theta]\\), and each landmark is \\([x, y]\\). Note that this is a vector, not a matrix — a flat list of all the unknowns concatenated together.\nThis matters because it tells you how the optimization actually works: it doesn’t solve for the robot’s path first and then the map, or vice versa. It solves for every unknown at once, jointly.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Visualizing SLAM with Factor Graphs"
+      "Visualizing Factor Graphs"
     ]
   },
   {
     "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#the-posterior-distribution",
     "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#the-posterior-distribution",
-    "title": "Visualizing SLAM with Factor Graphs",
-    "section": "The Posterior Distribution",
-    "text": "The Posterior Distribution\nThe quantity we actually care about is:\n\\[\np(x \\mid z) \\Rightarrow P(\\text{pose} \\mid \\text{measurements})\n\\]\nIn words: given everything the sensors have measured, what’s the probability distribution over where the robot actually is (and where the landmarks actually are)?",
+    "title": "Visualizing Factor Graphs",
+    "section": "5 The Posterior Distribution",
+    "text": "5 The Posterior Distribution\nThe quantity we actually care about is:\n\\[\np(x \\mid z) \\Rightarrow P(\\text{pose} \\mid \\text{measurements})\n\\]\nIn words: given everything the sensors have measured, what’s the probability distribution over where the robot actually is (and where the landmarks actually are)?",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Visualizing SLAM with Factor Graphs"
+      "Visualizing Factor Graphs"
     ]
   },
   {
     "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-factor-graphs",
     "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-factor-graphs",
-    "title": "Visualizing SLAM with Factor Graphs",
-    "section": "Why Factor Graphs?",
-    "text": "Why Factor Graphs?\nThe core idea is deceptively simple: draw constraints as nodes. Instead of writing one huge joint probability expression, we represent each piece of evidence — each measurement, each motion step — as its own node in a graph. This turns an intractable-looking equation into something structured and sparse.",
+    "title": "Visualizing Factor Graphs",
+    "section": "6 Why Factor Graphs?",
+    "text": "6 Why Factor Graphs?\nThe core idea is deceptively simple: draw constraints as nodes. Instead of writing one huge joint probability expression, we represent each piece of evidence — each measurement, each motion step — as its own node in a graph. This turns an intractable-looking equation into something structured and sparse.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Visualizing SLAM with Factor Graphs"
+      "Visualizing Factor Graphs"
     ]
   },
   {
     "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#bayesian-networks",
     "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#bayesian-networks",
-    "title": "Visualizing SLAM with Factor Graphs",
-    "section": "Bayesian Networks",
-    "text": "Bayesian Networks\nBayesian networks represent joint probability — but the trick is they don’t store it as one giant function. Instead, they exploit conditional independence to break it into small, manageable pieces.\nFor example, take three variables \\(a\\), \\(b\\), \\(c\\). If the dependency chain is \\(A \\to B \\to C\\), then instead of needing the full joint distribution, we can factor it as:\n\\[\nP(a,b,c) = P(a) \\cdot P(b \\mid a) \\cdot P(c \\mid b)\n\\]\nThis is the whole reason factor graphs are tractable at all — most variables in SLAM don’t directly depend on most other variables, so we never need to compute anything close to the full joint distribution.\n\nApplying this to our state vector\nThe same logic applies directly to \\(p(x \\mid z)\\). By Bayes’ rule:\n\\[\np(x \\mid z) \\propto p(z \\mid x) \\cdot p(x)\n\\]\nExpanding over all our poses, landmarks, and measurements:\n\\[\n\\begin{aligned}\np(x \\mid z) \\;\\propto\\;\\; & p(z_1,z_2,z_3,z_4 \\mid P_1,P_2,P_3,l_1,l_2) \\\\\n& \\cdot\\, p(P_1,P_2,P_3,l_1,l_2)\n\\end{aligned}\n\\]\nGiven the dependency structure — where \\(P_1 \\to P_2 \\to P_3\\) form the trajectory, and \\(l_1, l_2\\) are landmarks observed at different points along it — this factors into:\n\\[\n\\begin{aligned}\np(x \\mid z) \\;\\propto\\;\\; & p(P_1) \\cdot p(l_1) \\cdot p(l_2) \\\\\n& \\cdot\\, p(P_2\\mid P_1) \\cdot p(P_3\\mid P_2) \\\\\n& \\cdot\\, p(z_1\\mid P_1) \\cdot p(z_2\\mid P_1,l_1) \\\\\n& \\cdot\\, p(z_3\\mid P_2,l_1) \\cdot p(z_4\\mid P_3,l_2)\n\\end{aligned}\n\\]\nEvery term in that product corresponds to one measurement or one motion step. Nothing here is arbitrary — it falls directly out of which variables were involved in producing which observation.\n\n\nFrom Bayesian network to factor graph\nHere’s the structure before and after the transformation:\nBayesian network (directed, showing dependency direction):\n\n\n\nBayesian network for SLAM: poses P1, P2, P3 in a chain, landmarks l1 and l2, and measurements z1 through z4\n\n\nFactor graph (undirected, showing which variables a constraint touches):\n\n\n\nFactor graph for SLAM: variable nodes P1, P2, P3, l1, l2 connected to factor nodes φ1 through φ9\n\n\n\nUnary factors (priors): \\(\\phi_1(P_1)\\), \\(\\phi_4(l_1)\\), \\(\\phi_5(l_2)\\)\nMotion factors: \\(\\phi_2(P_2,P_1)\\), \\(\\phi_3(P_3,P_2)\\)\nObservation factors: \\(\\phi_6(P_1)\\), \\(\\phi_7(P_1,l_1)\\), \\(\\phi_8(P_2,l_1)\\), \\(\\phi_9(P_3,l_2)\\)\n\nThe shift from Bayesian network to factor graph is really a shift in what the nodes mean. In the Bayesian network, arrows encode causal or conditional direction. In the factor graph, we drop the directionality and instead ask: which variables does this one constraint touch?",
+    "title": "Visualizing Factor Graphs",
+    "section": "7 Bayesian Networks",
+    "text": "7 Bayesian Networks\nBayesian networks represent joint probability — but the trick is they don’t store it as one giant function. Instead, they exploit conditional independence to break it into small, manageable pieces.\nFor example, take three variables \\(a\\), \\(b\\), \\(c\\). If the dependency chain is \\(A \\to B \\to C\\), then instead of needing the full joint distribution, we can factor it as:\n\\[\nP(a,b,c) = P(a) \\cdot P(b \\mid a) \\cdot P(c \\mid b)\n\\]\nThis is the whole reason factor graphs are tractable at all — most variables in SLAM don’t directly depend on most other variables, so we never need to compute anything close to the full joint distribution.\n\n7.1 Applying this to our state vector\nThe same logic applies directly to \\(p(x \\mid z)\\). By Bayes’ rule:\n\\[\np(x \\mid z) \\propto p(z \\mid x) \\cdot p(x)\n\\]\nExpanding over all our poses, landmarks, and measurements:\n\\[\n\\begin{aligned}\np(x \\mid z) \\;\\propto\\;\\; & p(z_1,z_2,z_3,z_4 \\mid P_1,P_2,P_3,l_1,l_2) \\\\\n& \\cdot\\, p(P_1,P_2,P_3,l_1,l_2)\n\\end{aligned}\n\\]\nGiven the dependency structure — where \\(P_1 \\to P_2 \\to P_3\\) form the trajectory, and \\(l_1, l_2\\) are landmarks observed at different points along it — this factors into:\n\\[\n\\begin{aligned}\np(x \\mid z) \\;\\propto\\;\\; & p(P_1) \\cdot p(l_1) \\cdot p(l_2) \\\\\n& \\cdot\\, p(P_2\\mid P_1) \\cdot p(P_3\\mid P_2) \\\\\n& \\cdot\\, p(z_1\\mid P_1) \\cdot p(z_2\\mid P_1,l_1) \\\\\n& \\cdot\\, p(z_3\\mid P_2,l_1) \\cdot p(z_4\\mid P_3,l_2)\n\\end{aligned}\n\\]\nEvery term in that product corresponds to one measurement or one motion step. Nothing here is arbitrary — it falls directly out of which variables were involved in producing which observation.\n\n\n7.2 From Bayesian network to factor graph\nHere’s the structure before and after the transformation:\nBayesian network (directed, showing dependency direction):\n\n\n\nBayesian network for SLAM: poses P1, P2, P3 in a chain, landmarks l1 and l2, and measurements z1 through z4\n\n\nFactor graph (undirected, showing which variables a constraint touches):\n\n\n\nFactor graph for SLAM: variable nodes P1, P2, P3, l1, l2 connected to factor nodes φ1 through φ9\n\n\n\nUnary factors (priors): \\(\\phi_1(P_1)\\), \\(\\phi_4(l_1)\\), \\(\\phi_5(l_2)\\)\nMotion factors: \\(\\phi_2(P_2,P_1)\\), \\(\\phi_3(P_3,P_2)\\)\nObservation factors: \\(\\phi_6(P_1)\\), \\(\\phi_7(P_1,l_1)\\), \\(\\phi_8(P_2,l_1)\\), \\(\\phi_9(P_3,l_2)\\)\n\nThe shift from Bayesian network to factor graph is really a shift in what the nodes mean. In the Bayesian network, arrows encode causal or conditional direction. In the factor graph, we drop the directionality and instead ask: which variables does this one constraint touch?",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Visualizing SLAM with Factor Graphs"
+      "Visualizing Factor Graphs"
     ]
   },
   {
     "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#what-a-factor-graph-actually-is",
     "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#what-a-factor-graph-actually-is",
-    "title": "Visualizing SLAM with Factor Graphs",
-    "section": "What a Factor Graph Actually Is",
-    "text": "What a Factor Graph Actually Is\n\nA factor graph is a graph that represents the factorization of a function.\n\nA factor is just a function that says how compatible a set of variables is with one measurement. Every factor corresponds to one constraint — one measurement, one prior, one motion estimate.\nThe graph has exactly two kinds of nodes:\n\nVariable nodes (circles) — poses and landmarks, the things we’re solving for\nFactor nodes (squares) — constraints, the evidence tying variables together\n\nBecause edges only ever connect a variable node to a factor node (never variable-to-variable or factor-to-factor), this makes it a bipartite graph. That bipartite structure is what keeps the whole system sparse and efficient to optimize — most variables only touch a handful of factors, not all of them.",
+    "title": "Visualizing Factor Graphs",
+    "section": "8 What a Factor Graph Actually Is",
+    "text": "8 What a Factor Graph Actually Is\n\nA factor graph is a graph that represents the factorization of a function.\n\nA factor is just a function that says how compatible a set of variables is with one measurement. Every factor corresponds to one constraint — one measurement, one prior, one motion estimate.\nThe graph has exactly two kinds of nodes:\n\nVariable nodes (circles) — poses and landmarks, the things we’re solving for\nFactor nodes (squares) — constraints, the evidence tying variables together\n\nBecause edges only ever connect a variable node to a factor node (never variable-to-variable or factor-to-factor), this makes it a bipartite graph. That bipartite structure is what keeps the whole system sparse and efficient to optimize — most variables only touch a handful of factors, not all of them.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Visualizing SLAM with Factor Graphs"
+      "Visualizing Factor Graphs"
     ]
   },
   {
     "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#types-of-factors",
     "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#types-of-factors",
-    "title": "Visualizing SLAM with Factor Graphs",
-    "section": "Types of Factors",
-    "text": "Types of Factors\nTwo flavors of constraint show up constantly in a factor graph:\n\n\\(\\phi(P_1)\\) — a unary constraint, or prior. It involves just one variable, expressing a belief about it in isolation (e.g., “the robot starts near the origin”).\n\\(\\phi(P_2, P_1)\\) — a binary constraint, or between factor. It ties two variables together (e.g., “the robot moved this much between these two poses”).",
+    "title": "Visualizing Factor Graphs",
+    "section": "9 Types of Factors",
+    "text": "9 Types of Factors\nTwo flavors of constraint show up constantly in a factor graph:\n\n\\(\\phi(P_1)\\) — a unary constraint, or prior. It involves just one variable, expressing a belief about it in isolation (e.g., “the robot starts near the origin”).\n\\(\\phi(P_2, P_1)\\) — a binary constraint, or between factor. It ties two variables together (e.g., “the robot moved this much between these two poses”).",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Visualizing SLAM with Factor Graphs"
+      "Visualizing Factor Graphs"
     ]
   },
   {
     "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-sparsity-matters",
     "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-sparsity-matters",
-    "title": "Visualizing SLAM with Factor Graphs",
-    "section": "Why Sparsity Matters",
-    "text": "Why Sparsity Matters\nHere’s the property that makes factor graphs practical at scale: they’re sparse. Most nodes never connect to each other. A landmark observed early in a trajectory has no direct relationship to a pose visited much later — they only become linked indirectly, through the chain of poses in between. This makes sparsity one of the most important properties of the whole system.\nFormally, a factor graph is a tuple:\n\\[\nF = (U, V, E)\n\\]\nwhere \\(U\\) = factor nodes, \\(V\\) = variable nodes, and \\(E\\) = edges. The whole factorized function is just the product over all factors:\n\\[\n\\phi(x) = \\prod_i \\phi_i(x_i)\n\\]\nThis sparsity is why SLAM problems with thousands of poses and landmarks are still solvable in real time — the underlying linear systems end up being sparse matrices, and sparse solvers scale far better than dense ones.",
+    "title": "Visualizing Factor Graphs",
+    "section": "10 Why Sparsity Matters",
+    "text": "10 Why Sparsity Matters\nHere’s the property that makes factor graphs practical at scale: they’re sparse. Most nodes never connect to each other. A landmark observed early in a trajectory has no direct relationship to a pose visited much later — they only become linked indirectly, through the chain of poses in between. This makes sparsity one of the most important properties of the whole system.\nFormally, a factor graph is a tuple:\n\\[\nF = (U, V, E)\n\\]\nwhere \\(U\\) = factor nodes, \\(V\\) = variable nodes, and \\(E\\) = edges. The whole factorized function is just the product over all factors:\n\\[\n\\phi(x) = \\prod_i \\phi_i(x_i)\n\\]\nThis sparsity is why SLAM problems with thousands of poses and landmarks are still solvable in real time — the underlying linear systems end up being sparse matrices, and sparse solvers scale far better than dense ones.",
     "crumbs": [
       "SLAM",
       "Factor Graphs for SLAM",
-      "Visualizing SLAM with Factor Graphs"
+      "Visualizing Factor Graphs"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-we-need-iteration",
+    "href": "chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html#why-we-need-iteration",
+    "title": "Visualizing Factor Graphs",
+    "section": "11 Why We Need Iteration",
+    "text": "11 Why We Need Iteration\nNon-linear equations can’t be solved in one shot the way linear ones can. There’s no closed-form inverse waiting for us. So instead, we reach for iterative algorithms like Gauss-Newton or Levenberg-Marquardt (LM).\nIt’s worth sitting with this idea before diving into the mechanics:\n\nNo individual factor solves the problem. The solution comes from the collective agreement of all factors.\n\nEvery factor pulls the estimate toward what it believes is true, and the final solution is wherever all of these competing pulls settle into balance.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Visualizing Factor Graphs"
     ]
   }
 ]

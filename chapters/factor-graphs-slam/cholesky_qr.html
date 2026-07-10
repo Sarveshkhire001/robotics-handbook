@@ -6,9 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Sarvesh Khire">
 
-<title>ROBOTICS HANDBOOK – Robotics Handbook</title>
+<title>Cholesky &amp; QR – Robotics Handbook</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -27,27 +26,27 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-787e033c7b6f65c9dfccb6078e5d2d34.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-8487d1d9185897d8e9c8717c2b868418.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/factor-graphs-slam/gradient_newton.html" rel="next">
+<link href="../../chapters/factor-graphs-slam/linearization.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-787e033c7b6f65c9dfccb6078e5d2d34.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-8487d1d9185897d8e9c8717c2b868418.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -75,35 +74,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-slam-chapters .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-title','listing-subtitle',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-slam-chapters'] = new List('listing-slam-chapters', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -135,7 +105,7 @@ window.Quarto = {
 };
 </script>
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../styles.css">
 </head>
 
 <body class="nav-sidebar docked quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
@@ -307,9 +277,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">
-      Robotics Handbook
-      </li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/cholesky_qr.html">Cholesky &amp; QR</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -319,12 +287,12 @@ window.Quarto = {
   </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Robotics Handbook</a> 
+      <a href="../../">Robotics Handbook</a> 
         <div class="sidebar-tools-main">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
@@ -348,46 +316,46 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Factor Graphs for SLAM</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/overview.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/overview.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Overview</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Visualizing Factor Graphs</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/least_squares.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/least_squares.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Least Squares &amp; MAP</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/linearization.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/linearization.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Linearization &amp; Whitening</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/cholesky_qr.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/cholesky_qr.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Cholesky &amp; QR</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/gradient_newton.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/gradient_newton.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Optimization Methods</span></a>
   </div>
 </li>
@@ -405,33 +373,41 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#notes-on-robotics-fundamentals" id="toc-notes-on-robotics-fundamentals" class="nav-link active" data-scroll-target="#notes-on-robotics-fundamentals"><span class="header-section-number">1</span> Notes on Robotics Fundamentals</a>
+  <li><a href="#cholesky-factorization" id="toc-cholesky-factorization" class="nav-link active" data-scroll-target="#cholesky-factorization"><span class="header-section-number">1</span> Cholesky Factorization</a></li>
+  <li><a href="#qr-factorization" id="toc-qr-factorization" class="nav-link" data-scroll-target="#qr-factorization"><span class="header-section-number">2</span> QR Factorization</a>
   <ul class="collapse">
-  <li><a href="#slam" id="toc-slam" class="nav-link" data-scroll-target="#slam"><span class="header-section-number">1.1</span> SLAM</a></li>
-  <li><a href="#linear-algebra" id="toc-linear-algebra" class="nav-link" data-scroll-target="#linear-algebra"><span class="header-section-number">1.2</span> Linear Algebra</a></li>
+  <li><a href="#deriving-the-simplified-system" id="toc-deriving-the-simplified-system" class="nav-link" data-scroll-target="#deriving-the-simplified-system"><span class="header-section-number">2.1</span> Deriving the Simplified System</a></li>
   </ul></li>
+  <li><a href="#cholesky-vs.-qr-same-goal-different-routes" id="toc-cholesky-vs.-qr-same-goal-different-routes" class="nav-link" data-scroll-target="#cholesky-vs.-qr-same-goal-different-routes"><span class="header-section-number">3</span> Cholesky vs.&nbsp;QR: Same Goal, Different Routes</a>
+  <ul class="collapse">
+  <li><a href="#trade-offs" id="toc-trade-offs" class="nav-link" data-scroll-target="#trade-offs"><span class="header-section-number">3.1</span> Trade-offs</a></li>
+  </ul></li>
+  <li><a href="#optimization-algorithms-only-differ-in-one-thing" id="toc-optimization-algorithms-only-differ-in-one-thing" class="nav-link" data-scroll-target="#optimization-algorithms-only-differ-in-one-thing"><span class="header-section-number">4</span> Optimization Algorithms Only Differ in One Thing</a>
+  <ul class="collapse">
+  <li><a href="#the-optimization-problem" id="toc-the-optimization-problem" class="nav-link" data-scroll-target="#the-optimization-problem"><span class="header-section-number">4.1</span> The Optimization Problem</a></li>
+  </ul></li>
+  <li><a href="#first-order-vs.-second-order-optimization" id="toc-first-order-vs.-second-order-optimization" class="nav-link" data-scroll-target="#first-order-vs.-second-order-optimization"><span class="header-section-number">5</span> First Order vs.&nbsp;Second Order Optimization</a>
+  <ul class="collapse">
+  <li><a href="#st-order-gradient-only" id="toc-st-order-gradient-only" class="nav-link" data-scroll-target="#st-order-gradient-only"><span class="header-section-number">5.1</span> 1st Order: Gradient Only</a></li>
+  <li><a href="#nd-order-gradient-and-curvature" id="toc-nd-order-gradient-and-curvature" class="nav-link" data-scroll-target="#nd-order-gradient-and-curvature"><span class="header-section-number">5.2</span> 2nd Order: Gradient and Curvature</a></li>
+  </ul></li>
+  <li><a href="#comparing-the-algorithms" id="toc-comparing-the-algorithms" class="nav-link" data-scroll-target="#comparing-the-algorithms"><span class="header-section-number">6</span> Comparing the Algorithms</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content column-body" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/cholesky_qr.html">Cholesky &amp; QR</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">ROBOTICS HANDBOOK</h1>
+<h1 class="title">Cholesky &amp; QR</h1>
 </div>
 
 
 
-<div class="quarto-title-meta column-body">
+<div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Sarvesh Khire </p>
-          </div>
-  </div>
     
   
     
@@ -442,34 +418,256 @@ window.Quarto = {
 </header>
 
 
-<section id="notes-on-robotics-fundamentals" class="level2" data-number="1">
-<h2 data-number="1" class="anchored" data-anchor-id="notes-on-robotics-fundamentals"><span class="header-section-number">1</span> Notes on Robotics Fundamentals</h2>
-<p>Concepts and mathematics from robotics, SLAM, and localization — written the way I wish someone had explained them to me.</p>
-<section id="slam" class="level3" data-number="1.1">
-<h3 data-number="1.1" class="anchored" data-anchor-id="slam"><span class="header-section-number">1.1</span> SLAM</h3>
-<div id="listing-slam-chapters" class="quarto-listing quarto-listing-container-grid">
-<div class="list grid quarto-listing-cols-3">
-<div class="g-col-1" data-index="0" data-listing-file-modified-sort="1783261052871" data-listing-reading-time-sort="1" data-listing-word-count-sort="174">
-<a href="./chapters/factor-graphs-slam/overview.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Overview
-</h5>
+<section id="cholesky-factorization" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="cholesky-factorization"><span class="header-section-number">1</span> Cholesky Factorization</h2>
+<p>We’re left needing to solve the normal equations:</p>
+<p><span class="math display">\[
+A^T A \, \delta = A^T b
+\]</span></p>
+<p>Instead of inverting <span class="math inline">\(A^T A\)</span> directly (expensive and numerically fragile), we factor it:</p>
+<p><span class="math display">\[
+A^T A = R^T R \quad \to \; \text{Cholesky factor}
+\]</span></p>
+<p>where <span class="math inline">\(R\)</span> and <span class="math inline">\(R^T\)</span> are <strong>triangular matrices</strong>. Triangular systems are cheap to solve — that’s the whole motivation here.</p>
+<p>Substituting back into the normal equations:</p>
+<p><span class="math display">\[
+R^T R \, \delta = A^T b
+\]</span></p>
+<p>Rather than solving this all at once, we split it into two much easier triangular systems:</p>
+<ol type="1">
+<li>Solve for <span class="math inline">\(y\)</span> using <span class="math inline">\(R^T y = A^T b\)</span></li>
+<li>Then solve for <span class="math inline">\(\delta\)</span> using <span class="math inline">\(R\delta = y\)</span></li>
+</ol>
+<p>Each of these is a simple triangular solve — no expensive inversion required.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
 </div>
-</div></a>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>The payoff
 </div>
 </div>
-<div class="listing-no-matching d-none">No matching items</div>
+<div class="callout-body-container callout-body">
+<p>Cholesky takes the computation from <span class="math inline">\(O(n^3)\)</span> (a direct inversion) down to <span class="math inline">\(O(n^2)\)</span> per solve, by replacing one hard problem with two cheap triangular ones.</p>
+</div>
 </div>
 </section>
-<section id="linear-algebra" class="level3" data-number="1.2">
-<h3 data-number="1.2" class="anchored" data-anchor-id="linear-algebra"><span class="header-section-number">1.2</span> Linear Algebra</h3>
-<p><em>(coming soon)</em></p>
-
-
-
+<section id="qr-factorization" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="qr-factorization"><span class="header-section-number">2</span> QR Factorization</h2>
+<p>Cholesky factors <span class="math inline">\(A^T A\)</span>. QR takes a different approach — it factors <span class="math inline">\(A\)</span> <strong>itself</strong>:</p>
+<p><span class="math display">\[
+A = QR
+\]</span></p>
+<p>where <span class="math inline">\(Q\)</span> is <strong>orthogonal</strong> and <span class="math inline">\(R\)</span> is <strong>upper triangular</strong>.</p>
+<p>Orthogonal means <span class="math inline">\(Q^T Q = I\)</span>, which immediately gives us <span class="math inline">\(Q^{-1} = Q^T\)</span> — the inverse of <span class="math inline">\(Q\)</span> is just its transpose, essentially free to compute.</p>
+<section id="deriving-the-simplified-system" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="deriving-the-simplified-system"><span class="header-section-number">2.1</span> Deriving the Simplified System</h3>
+<p>Starting from the original system <span class="math inline">\(A\delta = b\)</span>, substitute <span class="math inline">\(A = QR\)</span>:</p>
+<p><span class="math display">\[
+QR\delta = b
+\]</span></p>
+<p>Multiply both sides by <span class="math inline">\(Q^T\)</span>:</p>
+<p><span class="math display">\[
+Q^T QR\delta = Q^T b
+\]</span></p>
+<p>Since <span class="math inline">\(Q^T Q = I\)</span>, this collapses to:</p>
+<p><span class="math display">\[
+R\delta = Q^T b
+\]</span></p>
+<p>This is <strong>much simpler to solve</strong> — <span class="math inline">\(R\)</span> is triangular, so it’s just a back-substitution away from <span class="math inline">\(\delta\)</span>.</p>
 </section>
+</section>
+<section id="cholesky-vs.-qr-same-goal-different-routes" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="cholesky-vs.-qr-same-goal-different-routes"><span class="header-section-number">3</span> Cholesky vs.&nbsp;QR: Same Goal, Different Routes</h2>
+<p>Both methods are ultimately solving the same problem, just via different factorizations:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Route</th>
+<th>Ever forms <span class="math inline">\(A^T A\)</span>?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Cholesky</td>
+<td><span class="math inline">\(A \to A^T A \to R^T R \to\)</span> solve</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>QR</td>
+<td><span class="math inline">\(A \to QR \to\)</span> solve</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<section id="trade-offs" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="trade-offs"><span class="header-section-number">3.1</span> Trade-offs</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Cholesky</th>
+<th>QR</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Speed</strong></td>
+<td>Faster, especially on sparse matrices</td>
+<td>Slower</td>
+</tr>
+<tr class="even">
+<td><strong>Numerical stability</strong></td>
+<td>More sensitive to error</td>
+<td>More stable</td>
+</tr>
+<tr class="odd">
+<td><strong>Typical use</strong></td>
+<td>Default choice for SLAM (systems are almost always sparse)</td>
+<td>Preferred when stability matters more than speed</td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Why QR is more stable
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The gap comes down to what happens to small errors: if <span class="math inline">\(A\)</span> is only slightly inaccurate, computing <span class="math inline">\(A^T A\)</span> roughly <strong>squares</strong> that inaccuracy. QR avoids this entirely, since it never forms <span class="math inline">\(A^T A\)</span> in the first place.</p>
+</div>
+</div>
+<p>The practical upshot: <strong>QR is more numerically stable but slower</strong>, while Cholesky is faster — especially on sparse problems — but slightly more sensitive to numerical error. Which one gets used often comes down to this trade-off between speed and stability for the specific problem at hand.</p>
+</section>
+</section>
+<section id="optimization-algorithms-only-differ-in-one-thing" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="optimization-algorithms-only-differ-in-one-thing"><span class="header-section-number">4</span> Optimization Algorithms Only Differ in One Thing</h2>
+<p>Zooming out from Cholesky and QR — which are both about solving <em>one</em> linear system — it’s worth placing that step inside the bigger picture of how the optimizer decides to move at all.</p>
+<blockquote class="blockquote">
+<p><strong>Optimization algorithms only differ in how they decide to take the next step.</strong> Everything else — the problem setup, the goal — stays the same.</p>
+</blockquote>
+<p>The three methods worth knowing are:</p>
+<ol type="1">
+<li>Steepest Descent</li>
+<li>Gauss-Newton</li>
+<li>Levenberg-Marquardt</li>
+</ol>
+<section id="the-optimization-problem" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="the-optimization-problem"><span class="header-section-number">4.1</span> The Optimization Problem</h3>
+<p>All three algorithms are solving the exact same underlying problem. Suppose we have an objective function:</p>
+<p><span class="math display">\[
+J(x) : \mathbb{R}^n \to \mathbb{R}
+\]</span></p>
+<p>where <span class="math inline">\(x\)</span> is an <span class="math inline">\(n\)</span>-dimensional vector, and <span class="math inline">\(J(x)\)</span> is a scalar cost.</p>
+<p><strong>The goal:</strong></p>
+<p><span class="math display">\[
+x^{*} = \operatorname*{argmin}_{x} J(x)
+\]</span></p>
+<p>In SLAM specifically, this cost is the sum of squared, whitened residuals we derived earlier:</p>
+<p><span class="math display">\[
+J(x) = \sum_i \| r_i(x) \|^2_{\Sigma_i}, \qquad r_i(x) = z_i - h_i(x_i)
+\]</span></p>
+<p>Every algorithm below is just a different strategy for minimizing this same <span class="math inline">\(J(x)\)</span>.</p>
+</section>
+</section>
+<section id="first-order-vs.-second-order-optimization" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="first-order-vs.-second-order-optimization"><span class="header-section-number">5</span> First Order vs.&nbsp;Second Order Optimization</h2>
+<p>Every optimization algorithm tries to approximate what <span class="math inline">\(J(x+\delta)\)</span> looks like near the current estimate <span class="math inline">\(x\)</span> — essentially asking “if I step in direction <span class="math inline">\(\delta\)</span>, how does the cost change?” There are two common ways to approximate this.</p>
+<section id="st-order-gradient-only" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="st-order-gradient-only"><span class="header-section-number">5.1</span> 1st Order: Gradient Only</h3>
+<p><span class="math display">\[
+J(x+\delta) \approx J(x) + \nabla J(x)^T \delta
+\]</span></p>
+<p>Only the <strong>gradient</strong> is used here — this tells us the <em>direction</em> of steepest change, but nothing about how the cost curves.</p>
+</section>
+<section id="nd-order-gradient-and-curvature" class="level3" data-number="5.2">
+<h3 data-number="5.2" class="anchored" data-anchor-id="nd-order-gradient-and-curvature"><span class="header-section-number">5.2</span> 2nd Order: Gradient and Curvature</h3>
+<p><span class="math display">\[
+J(x+\delta) \approx J(x) + \nabla J(x)^T \delta + \frac{1}{2}\delta^T H \delta
+\]</span></p>
+<p>where <span class="math inline">\(H = \nabla^2 J(x)\)</span> is the <strong>Hessian matrix</strong> — it captures curvature, i.e., how the gradient itself is changing.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Why curvature helps
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Knowing curvature lets an algorithm make a much better-informed guess about how big a step to take — instead of just which direction to move in.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="comparing-the-algorithms" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="comparing-the-algorithms"><span class="header-section-number">6</span> Comparing the Algorithms</h2>
+<p>The differences between these methods come down to whether — and how — they use the Hessian:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Algorithm</th>
+<th>Uses gradient</th>
+<th>Uses Hessian</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Gradient Descent</td>
+<td>✓</td>
+<td>✗</td>
+</tr>
+<tr class="even">
+<td>Gauss-Newton</td>
+<td>✓</td>
+<td>Approximate</td>
+</tr>
+<tr class="odd">
+<td>Newton</td>
+<td>✓</td>
+<td>Exact</td>
+</tr>
+<tr class="even">
+<td>Levenberg-Marquardt</td>
+<td>✓</td>
+<td>Approximate + Damping</td>
+</tr>
+</tbody>
+</table>
+<p>A few things worth noticing in this table:</p>
+<ul>
+<li><strong>Gradient descent</strong> is the cheapest per step, since it ignores curvature entirely — but that also makes it the least informed about how far to step, often leading to slow zig-zagging convergence.</li>
+<li><strong>Newton’s method</strong> uses the true Hessian and converges fastest in principle, but computing the exact Hessian is often expensive or impractical for large problems like SLAM.</li>
+<li><strong>Gauss-Newton</strong> is the practical middle ground: it approximates the Hessian as <span class="math inline">\(H \approx A^T A\)</span> (as we derived in the <a href="../../chapters/factor-graphs-slam/linearization.html#the-information-matrix">normal equations</a>), avoiding the cost of computing second derivatives directly. This is exactly the <span class="math inline">\(A^T A\)</span> we’ve been factoring with Cholesky and QR above.</li>
+<li><strong>Levenberg-Marquardt</strong> builds on Gauss-Newton by adding a <em>damping</em> term, blending it with gradient descent behavior when the Gauss-Newton step would be unreliable. This is what makes LM more robust in practice, particularly when far from the optimum.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>The throughline
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This progression — from no curvature information, to approximate curvature, to approximate-with-safety-net — is really what connects all three algorithms back to the same Taylor expansion framework.</p>
+</div>
+</div>
+
+
 </section>
 
 </main> <!-- /main -->
@@ -886,6 +1084,18 @@ Overview
     }
   });
   </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/factor-graphs-slam/linearization.html" class="pagination-link" aria-label="Linearization &amp; Whitening">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Linearization &amp; Whitening</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/factor-graphs-slam/gradient_newton.html" class="pagination-link" aria-label="Optimization Methods">
+        <span class="nav-page-text">Optimization Methods</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
 </div> <!-- /content -->
 
 
