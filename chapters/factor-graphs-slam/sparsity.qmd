@@ -1,0 +1,150 @@
+---
+title: "Sparsity and Fill-ins"
+---
+
+## Sparsity: Why SLAM Scales
+
+This is the reason optimizing thousands of poses doesn't take hours:
+**the Hessian matrix contains mostly zeros.**
+
+SLAM naturally produces sparse matrices because each pose $x_i$ only
+depends on other poses **in its immediate locality** — nearby poses in
+the trajectory or landmarks it directly observed, not the entire state.
+
+### Where the Sparsity Comes From
+
+Suppose the residual for one factor is:
+
+$$
+r_i(x) = z_i - h_i(x)
+$$
+
+where $x$ is the **complete** state vector:
+
+$$
+x = \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ l_1 \\ l_2 \end{bmatrix}
+$$
+
+Now suppose $r_i$ only actually depends on $x_2$ and $l_1$ — a
+completely reasonable scenario, since a single factor (like one
+landmark observation) only involves a couple of variables:
+
+$$
+r_i = r_i(x_2, l_1)
+$$
+
+The Jacobian $J_i = \dfrac{\partial r_i}{\partial x}$ has one column
+per variable in $x$ — five columns here. But since $r_i$ doesn't depend
+on $x_1$, $x_3$, or $l_2$ at all:
+
+$$
+\frac{\partial r_i}{\partial x_1} = 0, \qquad \frac{\partial r_i}{\partial x_3} = \frac{\partial r_i}{\partial l_2} = 0
+$$
+
+**Every factor produces one sparse Jacobian row** — mostly zeros, with
+nonzero entries only in the columns corresponding to the handful of
+variables that factor actually touches.
+
+Recall that the approximate Hessian is built directly from these
+Jacobians, [summed across all
+factors](gradient_newton.qmd#the-full-gauss-newton-system):
+
+$$
+H = \sum_i J_i^T \Sigma_i^{-1} J_i
+$$
+
+so this sparsity in each $J_i$ propagates directly into $H$: **the
+Hessian is sparse too.** This is precisely why sparse solvers like
+[Cholesky and QR](cholesky_qr.qmd) — exploiting this structure — are
+what make large-scale SLAM computationally feasible in the first place.
+
+## Sparse Isn't the Whole Story
+
+Simply having a sparse Hessian is not enough on its own — the matrix
+**becomes much denser during the factorization step**. This surprising
+fact is worth understanding, since it directly affects how efficient
+SLAM solvers actually are in practice.
+
+## Fill-ins During Factorization
+
+If $H$ is sparse going in, the resulting $R$ after [Cholesky
+factorization](cholesky_qr.qmd#cholesky-factorization) will **not**
+stay sparse. New non-zero entries can appear in places that were
+originally zero — these are called **fill-ins**.
+
+## Why Do Fill-ins Appear?
+
+We're trying to solve the [Gauss-Newton
+update](gradient_newton.qmd#the-full-gauss-newton-system):
+
+$$
+H\delta = -g \qquad \Longleftrightarrow \qquad A^T A\, \delta = -A^T b
+$$
+
+where $\delta$ is a stacked vector of all the unknowns:
+
+$$
+\delta = \begin{bmatrix} \delta_1 \\ \delta_2 \\ \delta_3 \end{bmatrix}
+$$
+
+One approach would be to solve for every variable **simultaneously**.
+But for thousands of variables, this isn't computationally possible to
+do directly — it's simply too large a system to tackle head-on.
+
+### A Familiar Idea: Gauss Elimination
+
+Remember solving small linear systems by elimination? Take:
+
+$$
+x + y = 5, \qquad 2x + y = 8
+$$
+
+We eliminate $x$ by expressing it from the first equation,
+$x = y - 5$, and substituting into the second:
+$2(y-5) + y = 8$ — then solve.
+
+**SLAM does the same thing, just at massive scale.** Instead of solving
+1000 poses all at once, we solve them **one by one, by elimination**.
+
+## Where the New Edges Come From
+
+Here's the key insight, illustrated with a small example. Suppose we
+have three variables connected like this:
+
+$$
+B - M - L
+$$
+
+Initially, $B$ knows nothing about $L$ — there's no direct edge between
+them, only an indirect path through $M$.
+
+Now, if we **eliminate $M$**, the information that used to flow through
+$M$ needs to be preserved somehow — it can't just vanish. So a **new
+constraint appears directly between $B$ and $L$**, and the graph
+becomes:
+
+$$
+B - L
+$$
+
+::: {.callout-note}
+## Why It's Called a "Fill-in"
+
+The new edge fills in a matrix entry that used to be zero — hence
+**fill-in**. This same operation goes by another name in estimation
+theory: the **Schur complement**.
+:::
+
+## The Bigger Picture
+
+This reframes what elimination is actually doing: **when you eliminate
+a variable, you are not throwing away information.** You're
+**compressing** all the information that variable carried into a new
+constraint between its former neighbors.
+
+That compression is exactly why fill-ins appear — and why, even though
+SLAM's Hessian starts out sparse, the matrices that show up partway
+through solving it can end up considerably denser. Managing this
+trade-off (choosing the *order* in which variables get eliminated, to
+minimize fill-in) turns out to be one of the most important practical
+concerns in making large-scale SLAM solvers fast.

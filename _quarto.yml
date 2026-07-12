@@ -18,6 +18,11 @@ website:
               - chapters/factor-graphs-slam/linearization.qmd
               - chapters/factor-graphs-slam/cholesky_qr.qmd
               - chapters/factor-graphs-slam/gradient_newton.qmd
+              - chapters/factor-graphs-slam/sparsity.qmd
+              - chapters/factor-graphs-slam/variable_ordering.qmd
+          - section: "Handwritten Notes"
+            contents:
+              - chapters/factor-graphs-slam/handwritten-notes/factor-graphs-slam.qmd
 
 format:
   html:

@@ -1,0 +1,180 @@
+---
+title: "Variable Ordering and COLAMD"
+---
+
+## Variable Ordering
+
+The natural question after seeing fill-ins is: **which variable should
+we eliminate first?** Getting this order right turns out to matter a
+great deal for performance.
+
+### Neighbours
+
+Suppose the graph looks like:
+
+$$
+x_1 - x_2 - x_3
+$$
+
+The neighbours of $x_2$ are $x_1$ and $x_3$:
+
+$$
+N(x_2) = \{x_1, x_3\}
+$$
+
+### Elimination Rule
+
+**When eliminating a variable, connect all of its neighbours together.**
+
+So after eliminating $x_2$ from the graph above, the result is:
+
+$$
+x_1 - x_3
+$$
+
+with a new edge appearing directly between $x_1$ and $x_3$ — this is
+exactly the [fill-in from before](sparsity.qmd#where-the-new-edges-come-from).
+
+**A bigger example:** suppose $N(x_1) = \{x_2, x_3, x_4\}$, arranged as:
+
+$$
+\begin{array}{c} x_2 \\ | \\ x_3 - x_1 - x_4 \end{array}
+$$
+
+Eliminating $x_1$ connects all three neighbours together:
+
+$$
+\begin{array}{c} x_2 \\ / \; \backslash \\ x_3 - x_4 \end{array}
+$$
+
+### Clique
+
+A **clique** is a set of vertices where every pair is connected.
+Formally, for $C = \{v_1, v_2, \dots, v_k\}$:
+
+$$
+C \text{ is a clique if } (v_i, v_j) \in E \; \forall\, i \neq j
+$$
+
+### The Fundamental Theorem of Elimination
+
+> **When eliminating a variable, its neighbours become a clique.**
+
+This single fact is the root cause of fill-ins — every elimination step
+forces all of the eliminated variable's neighbours to become fully
+interconnected.
+
+### Why Are Cliques Bad?
+
+Here's a concrete example. Suppose $x$ has four neighbours $n_1, n_2,
+n_3, n_4$:
+
+$$
+\begin{array}{c} n_2 \\ | \\ n_1 - x - n_3 \\ | \\ n_4 \end{array} \quad (4 \text{ edges})
+$$
+
+Eliminating $x$ turns $\{n_1, n_2, n_3, n_4\}$ into a clique — every
+pair now connected:
+
+$$
+\binom{4}{2} = 6 \text{ edges}
+$$
+
+**The graph became denser.** In general, if a variable has $k$
+neighbours, eliminating it creates:
+
+::: {.callout-important}
+## Fill-in Growth Is Quadratic
+
+$$
+\binom{k}{2} = \frac{k(k-1)}{2} \text{ edges}
+$$
+
+The growth is quadratic in $k$, which escalates fast:
+
+- 2 neighbours → 1 edge
+- 100 neighbours → 4950 edges → **computational disaster**
+:::
+
+> **We should eliminate variables with smaller degree first** — not
+> because the math changes, but purely as a computational trick to keep
+> the graph as sparse as possible for as long as possible.
+
+## Minimum Degree Ordering
+
+We've established that eliminating low-degree variables first keeps
+fill-in under control — this strategy is called **Minimum Degree
+Ordering**. But there's a catch: **choosing the elimination order is
+itself an NP-hard problem.** We can't just try every possible ordering
+and pick the best one — there are $n!$ possibilities.
+
+Worse, since removing one variable changes the graph, a naive algorithm
+would need to **recompute degrees after every single elimination**.
+That's very expensive at scale.
+
+### Approximate Minimum Degree (AMD)
+
+The practical fix: don't compute the exact degree every time. Instead,
+**estimate** how many neighbours a node is likely to have after
+fill-in, and use that estimate to guide the ordering.
+
+AMD doesn't always produce the *optimal* ordering — but it produces a
+**good** one, cheaply enough to actually be usable on large problems.
+
+## COLAMD: Column Approximate Minimum Degree
+
+COLAMD takes this a step further with an important shift in
+perspective: **it optimizes the ordering on the Jacobian, not the
+Hessian.**
+
+This matters because the Hessian $H$ can already have [fill-ins baked
+into it](sparsity.qmd#fill-ins-during-factorization) — working directly
+from the Jacobian avoids inheriting that problem.
+
+### Why "Column"?
+
+Recall the structure of the Jacobian: every **factor** is a **row**,
+and every **variable** is a **column**. COLAMD works by **reordering
+the columns** — i.e., reordering the variables. Critically, this
+reordering never changes the underlying math, only the order in which
+variables get eliminated.
+
+### How It Works
+
+Suppose we have a Jacobian $J$ whose columns correspond to variables
+$[x_1, x_2, x_3, l_1]^T$:
+
+$$
+J = \begin{bmatrix}
+* & * & 0 & 0 \\
+0 & * & * & 0 \\
+0 & 0 & * & * \\
+* & 0 & 0 & *
+\end{bmatrix}
+$$
+
+**Step 1: Convert the Jacobian to a bipartite graph.**
+
+This is a graph with two types of nodes — rows are one type of node,
+columns are another. Each factor row connects to the columns
+(variables) it involves:
+
+$$
+f_1 \to \{x_1, x_2\}, \quad f_2 \to \{x_2, x_3\}, \quad f_3 \to \{x_3, l_1\}, \quad f_4 \to \{x_1, l_1\}
+$$
+
+**Step 2: Compute column degree** — how many *other* columns share a
+row with this one.
+
+For example, column $x_1$ appears in rows $f_1$ and $f_4$. Row $f_1$
+also contains $x_2$, and row $f_4$ also contains $l_1$. So $x_1$ is
+related to $\{x_2, l_1\}$:
+
+$$
+\therefore \; \text{approximate degree of } x_1 = 2
+$$
+
+This column-degree estimate is exactly the quantity COLAMD uses to
+decide which variable to eliminate first — lower approximate degree
+means eliminating that variable is less likely to trigger a cascade of
+expensive fill-ins.

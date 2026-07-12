@@ -1,0 +1,11 @@
+---
+title: "Factor Graphs for SLAM"
+---
+
+## Factor Graphs for SLAM
+
+Handwritten notes covering the derivations in this chapter.
+
+<iframe src="https://drive.google.com/file/d/1DcVjwJDOL34yuNAHR8pdOMCh0PDOdWwq/preview" width="100%" height="800" style="border: none;" allow="autoplay"></iframe>
+
+[Open in Google Drive](https://drive.google.com/file/d/1DcVjwJDOL34yuNAHR8pdOMCh0PDOdWwq/view?usp=sharing){target="_blank"}
