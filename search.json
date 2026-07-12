@@ -14,6 +14,54 @@
     "text": "Concepts and mathematics from robotics, SLAM, and localization — written the way I wish someone had explained them to me.\n\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items\n\n\n\n\n(coming soon)"
   },
   {
+    "objectID": "chapters/factor-graphs-slam/variable_ordering.html",
+    "href": "chapters/factor-graphs-slam/variable_ordering.html",
+    "title": "Variable Ordering and COLAMD",
+    "section": "",
+    "text": "The natural question after seeing fill-ins is: which variable should we eliminate first? Getting this order right turns out to matter a great deal for performance.\n\n\nSuppose the graph looks like:\n\\[\nx_1 - x_2 - x_3\n\\]\nThe neighbours of \\(x_2\\) are \\(x_1\\) and \\(x_3\\):\n\\[\nN(x_2) = \\{x_1, x_3\\}\n\\]\n\n\n\nWhen eliminating a variable, connect all of its neighbours together.\nSo after eliminating \\(x_2\\) from the graph above, the result is:\n\\[\nx_1 - x_3\n\\]\nwith a new edge appearing directly between \\(x_1\\) and \\(x_3\\) — this is exactly the fill-in from before.\nA bigger example: suppose \\(N(x_1) = \\{x_2, x_3, x_4\\}\\), arranged as:\n\\[\n\\begin{array}{c} x_2 \\\\ | \\\\ x_3 - x_1 - x_4 \\end{array}\n\\]\nEliminating \\(x_1\\) connects all three neighbours together:\n\\[\n\\begin{array}{c} x_2 \\\\ / \\; \\backslash \\\\ x_3 - x_4 \\end{array}\n\\]\n\n\n\nA clique is a set of vertices where every pair is connected. Formally, for \\(C = \\{v_1, v_2, \\dots, v_k\\}\\):\n\\[\nC \\text{ is a clique if } (v_i, v_j) \\in E \\; \\forall\\, i \\neq j\n\\]\n\n\n\n\nWhen eliminating a variable, its neighbours become a clique.\n\nThis single fact is the root cause of fill-ins — every elimination step forces all of the eliminated variable’s neighbours to become fully interconnected.\n\n\n\nHere’s a concrete example. Suppose \\(x\\) has four neighbours \\(n_1, n_2,\nn_3, n_4\\):\n\\[\n\\begin{array}{c} n_2 \\\\ | \\\\ n_1 - x - n_3 \\\\ | \\\\ n_4 \\end{array} \\quad (4 \\text{ edges})\n\\]\nEliminating \\(x\\) turns \\(\\{n_1, n_2, n_3, n_4\\}\\) into a clique — every pair now connected:\n\\[\n\\binom{4}{2} = 6 \\text{ edges}\n\\]\nThe graph became denser. In general, if a variable has \\(k\\) neighbours, eliminating it creates:\n\n\n\n\n\n\nImportantFill-in Growth Is Quadratic\n\n\n\n\\[\n\\binom{k}{2} = \\frac{k(k-1)}{2} \\text{ edges}\n\\]\nThe growth is quadratic in \\(k\\), which escalates fast:\n\n2 neighbours → 1 edge\n100 neighbours → 4950 edges → computational disaster\n\n\n\n\nWe should eliminate variables with smaller degree first — not because the math changes, but purely as a computational trick to keep the graph as sparse as possible for as long as possible.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Variable Ordering and COLAMD"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/variable_ordering.html#variable-ordering",
+    "href": "chapters/factor-graphs-slam/variable_ordering.html#variable-ordering",
+    "title": "Variable Ordering and COLAMD",
+    "section": "",
+    "text": "The natural question after seeing fill-ins is: which variable should we eliminate first? Getting this order right turns out to matter a great deal for performance.\n\n\nSuppose the graph looks like:\n\\[\nx_1 - x_2 - x_3\n\\]\nThe neighbours of \\(x_2\\) are \\(x_1\\) and \\(x_3\\):\n\\[\nN(x_2) = \\{x_1, x_3\\}\n\\]\n\n\n\nWhen eliminating a variable, connect all of its neighbours together.\nSo after eliminating \\(x_2\\) from the graph above, the result is:\n\\[\nx_1 - x_3\n\\]\nwith a new edge appearing directly between \\(x_1\\) and \\(x_3\\) — this is exactly the fill-in from before.\nA bigger example: suppose \\(N(x_1) = \\{x_2, x_3, x_4\\}\\), arranged as:\n\\[\n\\begin{array}{c} x_2 \\\\ | \\\\ x_3 - x_1 - x_4 \\end{array}\n\\]\nEliminating \\(x_1\\) connects all three neighbours together:\n\\[\n\\begin{array}{c} x_2 \\\\ / \\; \\backslash \\\\ x_3 - x_4 \\end{array}\n\\]\n\n\n\nA clique is a set of vertices where every pair is connected. Formally, for \\(C = \\{v_1, v_2, \\dots, v_k\\}\\):\n\\[\nC \\text{ is a clique if } (v_i, v_j) \\in E \\; \\forall\\, i \\neq j\n\\]\n\n\n\n\nWhen eliminating a variable, its neighbours become a clique.\n\nThis single fact is the root cause of fill-ins — every elimination step forces all of the eliminated variable’s neighbours to become fully interconnected.\n\n\n\nHere’s a concrete example. Suppose \\(x\\) has four neighbours \\(n_1, n_2,\nn_3, n_4\\):\n\\[\n\\begin{array}{c} n_2 \\\\ | \\\\ n_1 - x - n_3 \\\\ | \\\\ n_4 \\end{array} \\quad (4 \\text{ edges})\n\\]\nEliminating \\(x\\) turns \\(\\{n_1, n_2, n_3, n_4\\}\\) into a clique — every pair now connected:\n\\[\n\\binom{4}{2} = 6 \\text{ edges}\n\\]\nThe graph became denser. In general, if a variable has \\(k\\) neighbours, eliminating it creates:\n\n\n\n\n\n\nImportantFill-in Growth Is Quadratic\n\n\n\n\\[\n\\binom{k}{2} = \\frac{k(k-1)}{2} \\text{ edges}\n\\]\nThe growth is quadratic in \\(k\\), which escalates fast:\n\n2 neighbours → 1 edge\n100 neighbours → 4950 edges → computational disaster\n\n\n\n\nWe should eliminate variables with smaller degree first — not because the math changes, but purely as a computational trick to keep the graph as sparse as possible for as long as possible.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Variable Ordering and COLAMD"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/variable_ordering.html#minimum-degree-ordering",
+    "href": "chapters/factor-graphs-slam/variable_ordering.html#minimum-degree-ordering",
+    "title": "Variable Ordering and COLAMD",
+    "section": "2 Minimum Degree Ordering",
+    "text": "2 Minimum Degree Ordering\nWe’ve established that eliminating low-degree variables first keeps fill-in under control — this strategy is called Minimum Degree Ordering. But there’s a catch: choosing the elimination order is itself an NP-hard problem. We can’t just try every possible ordering and pick the best one — there are \\(n!\\) possibilities.\nWorse, since removing one variable changes the graph, a naive algorithm would need to recompute degrees after every single elimination. That’s very expensive at scale.\n\n2.1 Approximate Minimum Degree (AMD)\nThe practical fix: don’t compute the exact degree every time. Instead, estimate how many neighbours a node is likely to have after fill-in, and use that estimate to guide the ordering.\nAMD doesn’t always produce the optimal ordering — but it produces a good one, cheaply enough to actually be usable on large problems.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Variable Ordering and COLAMD"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/variable_ordering.html#colamd-column-approximate-minimum-degree",
+    "href": "chapters/factor-graphs-slam/variable_ordering.html#colamd-column-approximate-minimum-degree",
+    "title": "Variable Ordering and COLAMD",
+    "section": "3 COLAMD: Column Approximate Minimum Degree",
+    "text": "3 COLAMD: Column Approximate Minimum Degree\nCOLAMD takes this a step further with an important shift in perspective: it optimizes the ordering on the Jacobian, not the Hessian.\nThis matters because the Hessian \\(H\\) can already have fill-ins baked into it — working directly from the Jacobian avoids inheriting that problem.\n\n3.1 Why “Column”?\nRecall the structure of the Jacobian: every factor is a row, and every variable is a column. COLAMD works by reordering the columns — i.e., reordering the variables. Critically, this reordering never changes the underlying math, only the order in which variables get eliminated.\n\n\n3.2 How It Works\nSuppose we have a Jacobian \\(J\\) whose columns correspond to variables \\([x_1, x_2, x_3, l_1]^T\\):\n\\[\nJ = \\begin{bmatrix}\n* & * & 0 & 0 \\\\\n0 & * & * & 0 \\\\\n0 & 0 & * & * \\\\\n* & 0 & 0 & *\n\\end{bmatrix}\n\\]\nStep 1: Convert the Jacobian to a bipartite graph.\nThis is a graph with two types of nodes — rows are one type of node, columns are another. Each factor row connects to the columns (variables) it involves:\n\\[\nf_1 \\to \\{x_1, x_2\\}, \\quad f_2 \\to \\{x_2, x_3\\}, \\quad f_3 \\to \\{x_3, l_1\\}, \\quad f_4 \\to \\{x_1, l_1\\}\n\\]\nStep 2: Compute column degree — how many other columns share a row with this one.\nFor example, column \\(x_1\\) appears in rows \\(f_1\\) and \\(f_4\\). Row \\(f_1\\) also contains \\(x_2\\), and row \\(f_4\\) also contains \\(l_1\\). So \\(x_1\\) is related to \\(\\{x_2, l_1\\}\\):\n\\[\n\\therefore \\; \\text{approximate degree of } x_1 = 2\n\\]\nThis column-degree estimate is exactly the quantity COLAMD uses to decide which variable to eliminate first — lower approximate degree means eliminating that variable is less likely to trigger a cascade of expensive fill-ins.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Variable Ordering and COLAMD"
+    ]
+  },
+  {
     "objectID": "chapters/factor-graphs-slam/overview.html",
     "href": "chapters/factor-graphs-slam/overview.html",
     "title": "Overview",
@@ -158,97 +206,6 @@
     ]
   },
   {
-    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html",
-    "href": "chapters/factor-graphs-slam/cholesky_qr.html",
-    "title": "Cholesky & QR",
-    "section": "",
-    "text": "We’re left needing to solve the normal equations:\n\\[\nA^T A \\, \\delta = A^T b\n\\]\nInstead of inverting \\(A^T A\\) directly (expensive and numerically fragile), we factor it:\n\\[\nA^T A = R^T R \\quad \\to \\; \\text{Cholesky factor}\n\\]\nwhere \\(R\\) and \\(R^T\\) are triangular matrices. Triangular systems are cheap to solve — that’s the whole motivation here.\nSubstituting back into the normal equations:\n\\[\nR^T R \\, \\delta = A^T b\n\\]\nRather than solving this all at once, we split it into two much easier triangular systems:\n\nSolve for \\(y\\) using \\(R^T y = A^T b\\)\nThen solve for \\(\\delta\\) using \\(R\\delta = y\\)\n\nEach of these is a simple triangular solve — no expensive inversion required.\n\n\n\n\n\n\nTipThe payoff\n\n\n\nCholesky takes the computation from \\(O(n^3)\\) (a direct inversion) down to \\(O(n^2)\\) per solve, by replacing one hard problem with two cheap triangular ones.",
-    "crumbs": [
-      "SLAM",
-      "Factor Graphs for SLAM",
-      "Cholesky & QR"
-    ]
-  },
-  {
-    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#cholesky-factorization",
-    "href": "chapters/factor-graphs-slam/cholesky_qr.html#cholesky-factorization",
-    "title": "Cholesky & QR",
-    "section": "",
-    "text": "We’re left needing to solve the normal equations:\n\\[\nA^T A \\, \\delta = A^T b\n\\]\nInstead of inverting \\(A^T A\\) directly (expensive and numerically fragile), we factor it:\n\\[\nA^T A = R^T R \\quad \\to \\; \\text{Cholesky factor}\n\\]\nwhere \\(R\\) and \\(R^T\\) are triangular matrices. Triangular systems are cheap to solve — that’s the whole motivation here.\nSubstituting back into the normal equations:\n\\[\nR^T R \\, \\delta = A^T b\n\\]\nRather than solving this all at once, we split it into two much easier triangular systems:\n\nSolve for \\(y\\) using \\(R^T y = A^T b\\)\nThen solve for \\(\\delta\\) using \\(R\\delta = y\\)\n\nEach of these is a simple triangular solve — no expensive inversion required.\n\n\n\n\n\n\nTipThe payoff\n\n\n\nCholesky takes the computation from \\(O(n^3)\\) (a direct inversion) down to \\(O(n^2)\\) per solve, by replacing one hard problem with two cheap triangular ones.",
-    "crumbs": [
-      "SLAM",
-      "Factor Graphs for SLAM",
-      "Cholesky & QR"
-    ]
-  },
-  {
-    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#qr-factorization",
-    "href": "chapters/factor-graphs-slam/cholesky_qr.html#qr-factorization",
-    "title": "Cholesky & QR",
-    "section": "2 QR Factorization",
-    "text": "2 QR Factorization\nCholesky factors \\(A^T A\\). QR takes a different approach — it factors \\(A\\) itself:\n\\[\nA = QR\n\\]\nwhere \\(Q\\) is orthogonal and \\(R\\) is upper triangular.\nOrthogonal means \\(Q^T Q = I\\), which immediately gives us \\(Q^{-1} = Q^T\\) — the inverse of \\(Q\\) is just its transpose, essentially free to compute.\n\n2.1 Deriving the Simplified System\nStarting from the original system \\(A\\delta = b\\), substitute \\(A = QR\\):\n\\[\nQR\\delta = b\n\\]\nMultiply both sides by \\(Q^T\\):\n\\[\nQ^T QR\\delta = Q^T b\n\\]\nSince \\(Q^T Q = I\\), this collapses to:\n\\[\nR\\delta = Q^T b\n\\]\nThis is much simpler to solve — \\(R\\) is triangular, so it’s just a back-substitution away from \\(\\delta\\).",
-    "crumbs": [
-      "SLAM",
-      "Factor Graphs for SLAM",
-      "Cholesky & QR"
-    ]
-  },
-  {
-    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#cholesky-vs.-qr-same-goal-different-routes",
-    "href": "chapters/factor-graphs-slam/cholesky_qr.html#cholesky-vs.-qr-same-goal-different-routes",
-    "title": "Cholesky & QR",
-    "section": "3 Cholesky vs. QR: Same Goal, Different Routes",
-    "text": "3 Cholesky vs. QR: Same Goal, Different Routes\nBoth methods are ultimately solving the same problem, just via different factorizations:\n\n\n\nMethod\nRoute\nEver forms \\(A^T A\\)?\n\n\n\n\nCholesky\n\\(A \\to A^T A \\to R^T R \\to\\) solve\nYes\n\n\nQR\n\\(A \\to QR \\to\\) solve\nNo\n\n\n\n\n3.1 Trade-offs\n\n\n\n\n\n\n\n\n\nCholesky\nQR\n\n\n\n\nSpeed\nFaster, especially on sparse matrices\nSlower\n\n\nNumerical stability\nMore sensitive to error\nMore stable\n\n\nTypical use\nDefault choice for SLAM (systems are almost always sparse)\nPreferred when stability matters more than speed\n\n\n\n\n\n\n\n\n\nNoteWhy QR is more stable\n\n\n\nThe gap comes down to what happens to small errors: if \\(A\\) is only slightly inaccurate, computing \\(A^T A\\) roughly squares that inaccuracy. QR avoids this entirely, since it never forms \\(A^T A\\) in the first place.\n\n\nThe practical upshot: QR is more numerically stable but slower, while Cholesky is faster — especially on sparse problems — but slightly more sensitive to numerical error. Which one gets used often comes down to this trade-off between speed and stability for the specific problem at hand.",
-    "crumbs": [
-      "SLAM",
-      "Factor Graphs for SLAM",
-      "Cholesky & QR"
-    ]
-  },
-  {
-    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#optimization-algorithms-only-differ-in-one-thing",
-    "href": "chapters/factor-graphs-slam/cholesky_qr.html#optimization-algorithms-only-differ-in-one-thing",
-    "title": "Cholesky & QR",
-    "section": "4 Optimization Algorithms Only Differ in One Thing",
-    "text": "4 Optimization Algorithms Only Differ in One Thing\nZooming out from Cholesky and QR — which are both about solving one linear system — it’s worth placing that step inside the bigger picture of how the optimizer decides to move at all.\n\nOptimization algorithms only differ in how they decide to take the next step. Everything else — the problem setup, the goal — stays the same.\n\nThe three methods worth knowing are:\n\nSteepest Descent\nGauss-Newton\nLevenberg-Marquardt\n\n\n4.1 The Optimization Problem\nAll three algorithms are solving the exact same underlying problem. Suppose we have an objective function:\n\\[\nJ(x) : \\mathbb{R}^n \\to \\mathbb{R}\n\\]\nwhere \\(x\\) is an \\(n\\)-dimensional vector, and \\(J(x)\\) is a scalar cost.\nThe goal:\n\\[\nx^{*} = \\operatorname*{argmin}_{x} J(x)\n\\]\nIn SLAM specifically, this cost is the sum of squared, whitened residuals we derived earlier:\n\\[\nJ(x) = \\sum_i \\| r_i(x) \\|^2_{\\Sigma_i}, \\qquad r_i(x) = z_i - h_i(x_i)\n\\]\nEvery algorithm below is just a different strategy for minimizing this same \\(J(x)\\).",
-    "crumbs": [
-      "SLAM",
-      "Factor Graphs for SLAM",
-      "Cholesky & QR"
-    ]
-  },
-  {
-    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#first-order-vs.-second-order-optimization",
-    "href": "chapters/factor-graphs-slam/cholesky_qr.html#first-order-vs.-second-order-optimization",
-    "title": "Cholesky & QR",
-    "section": "5 First Order vs. Second Order Optimization",
-    "text": "5 First Order vs. Second Order Optimization\nEvery optimization algorithm tries to approximate what \\(J(x+\\delta)\\) looks like near the current estimate \\(x\\) — essentially asking “if I step in direction \\(\\delta\\), how does the cost change?” There are two common ways to approximate this.\n\n5.1 1st Order: Gradient Only\n\\[\nJ(x+\\delta) \\approx J(x) + \\nabla J(x)^T \\delta\n\\]\nOnly the gradient is used here — this tells us the direction of steepest change, but nothing about how the cost curves.\n\n\n5.2 2nd Order: Gradient and Curvature\n\\[\nJ(x+\\delta) \\approx J(x) + \\nabla J(x)^T \\delta + \\frac{1}{2}\\delta^T H \\delta\n\\]\nwhere \\(H = \\nabla^2 J(x)\\) is the Hessian matrix — it captures curvature, i.e., how the gradient itself is changing.\n\n\n\n\n\n\nTipWhy curvature helps\n\n\n\nKnowing curvature lets an algorithm make a much better-informed guess about how big a step to take — instead of just which direction to move in.",
-    "crumbs": [
-      "SLAM",
-      "Factor Graphs for SLAM",
-      "Cholesky & QR"
-    ]
-  },
-  {
-    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#comparing-the-algorithms",
-    "href": "chapters/factor-graphs-slam/cholesky_qr.html#comparing-the-algorithms",
-    "title": "Cholesky & QR",
-    "section": "6 Comparing the Algorithms",
-    "text": "6 Comparing the Algorithms\nThe differences between these methods come down to whether — and how — they use the Hessian:\n\n\n\nAlgorithm\nUses gradient\nUses Hessian\n\n\n\n\nGradient Descent\n✓\n✗\n\n\nGauss-Newton\n✓\nApproximate\n\n\nNewton\n✓\nExact\n\n\nLevenberg-Marquardt\n✓\nApproximate + Damping\n\n\n\nA few things worth noticing in this table:\n\nGradient descent is the cheapest per step, since it ignores curvature entirely — but that also makes it the least informed about how far to step, often leading to slow zig-zagging convergence.\nNewton’s method uses the true Hessian and converges fastest in principle, but computing the exact Hessian is often expensive or impractical for large problems like SLAM.\nGauss-Newton is the practical middle ground: it approximates the Hessian as \\(H \\approx A^T A\\) (as we derived in the normal equations), avoiding the cost of computing second derivatives directly. This is exactly the \\(A^T A\\) we’ve been factoring with Cholesky and QR above.\nLevenberg-Marquardt builds on Gauss-Newton by adding a damping term, blending it with gradient descent behavior when the Gauss-Newton step would be unreliable. This is what makes LM more robust in practice, particularly when far from the optimum.\n\n\n\n\n\n\n\nNoteThe throughline\n\n\n\nThis progression — from no curvature information, to approximate curvature, to approximate-with-safety-net — is really what connects all three algorithms back to the same Taylor expansion framework.",
-    "crumbs": [
-      "SLAM",
-      "Factor Graphs for SLAM",
-      "Cholesky & QR"
-    ]
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
-    "section": "",
-    "text": "About this site"
-  },
-  {
     "objectID": "chapters/factor-graphs-slam/gradient_newton.html",
     "href": "chapters/factor-graphs-slam/gradient_newton.html",
     "title": "Optimization Methods",
@@ -342,6 +299,121 @@
       "SLAM",
       "Factor Graphs for SLAM",
       "Optimization Methods"
+    ]
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site"
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html",
+    "title": "Cholesky & QR",
+    "section": "",
+    "text": "We’re left needing to solve the normal equations:\n\\[\nA^T A \\, \\delta = A^T b\n\\]\nInstead of inverting \\(A^T A\\) directly (expensive and numerically fragile), we factor it:\n\\[\nA^T A = R^T R \\quad \\to \\; \\text{Cholesky factor}\n\\]\nwhere \\(R\\) and \\(R^T\\) are triangular matrices. Triangular systems are cheap to solve — that’s the whole motivation here.\nSubstituting back into the normal equations:\n\\[\nR^T R \\, \\delta = A^T b\n\\]\nRather than solving this all at once, we split it into two much easier triangular systems:\n\nSolve for \\(y\\) using \\(R^T y = A^T b\\)\nThen solve for \\(\\delta\\) using \\(R\\delta = y\\)\n\nEach of these is a simple triangular solve — no expensive inversion required.\n\n\n\n\n\n\nTipThe payoff\n\n\n\nCholesky takes the computation from \\(O(n^3)\\) (a direct inversion) down to \\(O(n^2)\\) per solve, by replacing one hard problem with two cheap triangular ones.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#cholesky-factorization",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html#cholesky-factorization",
+    "title": "Cholesky & QR",
+    "section": "",
+    "text": "We’re left needing to solve the normal equations:\n\\[\nA^T A \\, \\delta = A^T b\n\\]\nInstead of inverting \\(A^T A\\) directly (expensive and numerically fragile), we factor it:\n\\[\nA^T A = R^T R \\quad \\to \\; \\text{Cholesky factor}\n\\]\nwhere \\(R\\) and \\(R^T\\) are triangular matrices. Triangular systems are cheap to solve — that’s the whole motivation here.\nSubstituting back into the normal equations:\n\\[\nR^T R \\, \\delta = A^T b\n\\]\nRather than solving this all at once, we split it into two much easier triangular systems:\n\nSolve for \\(y\\) using \\(R^T y = A^T b\\)\nThen solve for \\(\\delta\\) using \\(R\\delta = y\\)\n\nEach of these is a simple triangular solve — no expensive inversion required.\n\n\n\n\n\n\nTipThe payoff\n\n\n\nCholesky takes the computation from \\(O(n^3)\\) (a direct inversion) down to \\(O(n^2)\\) per solve, by replacing one hard problem with two cheap triangular ones.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#qr-factorization",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html#qr-factorization",
+    "title": "Cholesky & QR",
+    "section": "2 QR Factorization",
+    "text": "2 QR Factorization\nCholesky factors \\(A^T A\\). QR takes a different approach — it factors \\(A\\) itself:\n\\[\nA = QR\n\\]\nwhere \\(Q\\) is orthogonal and \\(R\\) is upper triangular.\nOrthogonal means \\(Q^T Q = I\\), which immediately gives us \\(Q^{-1} = Q^T\\) — the inverse of \\(Q\\) is just its transpose, essentially free to compute.\n\n2.1 Deriving the Simplified System\nStarting from the original system \\(A\\delta = b\\), substitute \\(A = QR\\):\n\\[\nQR\\delta = b\n\\]\nMultiply both sides by \\(Q^T\\):\n\\[\nQ^T QR\\delta = Q^T b\n\\]\nSince \\(Q^T Q = I\\), this collapses to:\n\\[\nR\\delta = Q^T b\n\\]\nThis is much simpler to solve — \\(R\\) is triangular, so it’s just a back-substitution away from \\(\\delta\\).",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#cholesky-vs.-qr-same-goal-different-routes",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html#cholesky-vs.-qr-same-goal-different-routes",
+    "title": "Cholesky & QR",
+    "section": "3 Cholesky vs. QR: Same Goal, Different Routes",
+    "text": "3 Cholesky vs. QR: Same Goal, Different Routes\nBoth methods are ultimately solving the same problem, just via different factorizations:\n\n\n\nMethod\nRoute\nEver forms \\(A^T A\\)?\n\n\n\n\nCholesky\n\\(A \\to A^T A \\to R^T R \\to\\) solve\nYes\n\n\nQR\n\\(A \\to QR \\to\\) solve\nNo\n\n\n\n\n3.1 Trade-offs\n\n\n\n\n\n\n\n\n\nCholesky\nQR\n\n\n\n\nSpeed\nFaster, especially on sparse matrices\nSlower\n\n\nNumerical stability\nMore sensitive to error\nMore stable\n\n\nTypical use\nDefault choice for SLAM (systems are almost always sparse)\nPreferred when stability matters more than speed\n\n\n\n\n\n\n\n\n\nNoteWhy QR is more stable\n\n\n\nThe gap comes down to what happens to small errors: if \\(A\\) is only slightly inaccurate, computing \\(A^T A\\) roughly squares that inaccuracy. QR avoids this entirely, since it never forms \\(A^T A\\) in the first place.\n\n\nThe practical upshot: QR is more numerically stable but slower, while Cholesky is faster — especially on sparse problems — but slightly more sensitive to numerical error. Which one gets used often comes down to this trade-off between speed and stability for the specific problem at hand.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#optimization-algorithms-only-differ-in-one-thing",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html#optimization-algorithms-only-differ-in-one-thing",
+    "title": "Cholesky & QR",
+    "section": "4 Optimization Algorithms Only Differ in One Thing",
+    "text": "4 Optimization Algorithms Only Differ in One Thing\nZooming out from Cholesky and QR — which are both about solving one linear system — it’s worth placing that step inside the bigger picture of how the optimizer decides to move at all.\n\nOptimization algorithms only differ in how they decide to take the next step. Everything else — the problem setup, the goal — stays the same.\n\nThe three methods worth knowing are:\n\nSteepest Descent\nGauss-Newton\nLevenberg-Marquardt\n\n\n4.1 The Optimization Problem\nAll three algorithms are solving the exact same underlying problem. Suppose we have an objective function:\n\\[\nJ(x) : \\mathbb{R}^n \\to \\mathbb{R}\n\\]\nwhere \\(x\\) is an \\(n\\)-dimensional vector, and \\(J(x)\\) is a scalar cost.\nThe goal:\n\\[\nx^{*} = \\operatorname*{argmin}_{x} J(x)\n\\]\nIn SLAM specifically, this cost is the sum of squared, whitened residuals we derived earlier:\n\\[\nJ(x) = \\sum_i \\| r_i(x) \\|^2_{\\Sigma_i}, \\qquad r_i(x) = z_i - h_i(x_i)\n\\]\nEvery algorithm below is just a different strategy for minimizing this same \\(J(x)\\).",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#first-order-vs.-second-order-optimization",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html#first-order-vs.-second-order-optimization",
+    "title": "Cholesky & QR",
+    "section": "5 First Order vs. Second Order Optimization",
+    "text": "5 First Order vs. Second Order Optimization\nEvery optimization algorithm tries to approximate what \\(J(x+\\delta)\\) looks like near the current estimate \\(x\\) — essentially asking “if I step in direction \\(\\delta\\), how does the cost change?” There are two common ways to approximate this.\n\n5.1 1st Order: Gradient Only\n\\[\nJ(x+\\delta) \\approx J(x) + \\nabla J(x)^T \\delta\n\\]\nOnly the gradient is used here — this tells us the direction of steepest change, but nothing about how the cost curves.\n\n\n5.2 2nd Order: Gradient and Curvature\n\\[\nJ(x+\\delta) \\approx J(x) + \\nabla J(x)^T \\delta + \\frac{1}{2}\\delta^T H \\delta\n\\]\nwhere \\(H = \\nabla^2 J(x)\\) is the Hessian matrix — it captures curvature, i.e., how the gradient itself is changing.\n\n\n\n\n\n\nTipWhy curvature helps\n\n\n\nKnowing curvature lets an algorithm make a much better-informed guess about how big a step to take — instead of just which direction to move in.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/cholesky_qr.html#comparing-the-algorithms",
+    "href": "chapters/factor-graphs-slam/cholesky_qr.html#comparing-the-algorithms",
+    "title": "Cholesky & QR",
+    "section": "6 Comparing the Algorithms",
+    "text": "6 Comparing the Algorithms\nThe differences between these methods come down to whether — and how — they use the Hessian:\n\n\n\nAlgorithm\nUses gradient\nUses Hessian\n\n\n\n\nGradient Descent\n✓\n✗\n\n\nGauss-Newton\n✓\nApproximate\n\n\nNewton\n✓\nExact\n\n\nLevenberg-Marquardt\n✓\nApproximate + Damping\n\n\n\nA few things worth noticing in this table:\n\nGradient descent is the cheapest per step, since it ignores curvature entirely — but that also makes it the least informed about how far to step, often leading to slow zig-zagging convergence.\nNewton’s method uses the true Hessian and converges fastest in principle, but computing the exact Hessian is often expensive or impractical for large problems like SLAM.\nGauss-Newton is the practical middle ground: it approximates the Hessian as \\(H \\approx A^T A\\) (as we derived in the normal equations), avoiding the cost of computing second derivatives directly. This is exactly the \\(A^T A\\) we’ve been factoring with Cholesky and QR above.\nLevenberg-Marquardt builds on Gauss-Newton by adding a damping term, blending it with gradient descent behavior when the Gauss-Newton step would be unreliable. This is what makes LM more robust in practice, particularly when far from the optimum.\n\n\n\n\n\n\n\nNoteThe throughline\n\n\n\nThis progression — from no curvature information, to approximate curvature, to approximate-with-safety-net — is really what connects all three algorithms back to the same Taylor expansion framework.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Cholesky & QR"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/handwritten-notes/factor-graphs-slam.html",
+    "href": "chapters/factor-graphs-slam/handwritten-notes/factor-graphs-slam.html",
+    "title": "Factor Graphs for SLAM",
+    "section": "",
+    "text": "Handwritten notes covering the derivations in this chapter.\n\n\nOpen in Google Drive",
+    "crumbs": [
+      "SLAM",
+      "Handwritten Notes",
+      "Factor Graphs for SLAM"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/handwritten-notes/factor-graphs-slam.html#factor-graphs-for-slam",
+    "href": "chapters/factor-graphs-slam/handwritten-notes/factor-graphs-slam.html#factor-graphs-for-slam",
+    "title": "Factor Graphs for SLAM",
+    "section": "",
+    "text": "Handwritten notes covering the derivations in this chapter.\n\n\nOpen in Google Drive",
+    "crumbs": [
+      "SLAM",
+      "Handwritten Notes",
+      "Factor Graphs for SLAM"
     ]
   },
   {
@@ -462,6 +534,90 @@
       "SLAM",
       "Factor Graphs for SLAM",
       "Linearization & Whitening"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/sparsity.html",
+    "href": "chapters/factor-graphs-slam/sparsity.html",
+    "title": "Sparsity and Fill-ins",
+    "section": "",
+    "text": "This is the reason optimizing thousands of poses doesn’t take hours: the Hessian matrix contains mostly zeros.\nSLAM naturally produces sparse matrices because each pose \\(x_i\\) only depends on other poses in its immediate locality — nearby poses in the trajectory or landmarks it directly observed, not the entire state.\n\n\nSuppose the residual for one factor is:\n\\[\nr_i(x) = z_i - h_i(x)\n\\]\nwhere \\(x\\) is the complete state vector:\n\\[\nx = \\begin{bmatrix} x_1 \\\\ x_2 \\\\ x_3 \\\\ l_1 \\\\ l_2 \\end{bmatrix}\n\\]\nNow suppose \\(r_i\\) only actually depends on \\(x_2\\) and \\(l_1\\) — a completely reasonable scenario, since a single factor (like one landmark observation) only involves a couple of variables:\n\\[\nr_i = r_i(x_2, l_1)\n\\]\nThe Jacobian \\(J_i = \\dfrac{\\partial r_i}{\\partial x}\\) has one column per variable in \\(x\\) — five columns here. But since \\(r_i\\) doesn’t depend on \\(x_1\\), \\(x_3\\), or \\(l_2\\) at all:\n\\[\n\\frac{\\partial r_i}{\\partial x_1} = 0, \\qquad \\frac{\\partial r_i}{\\partial x_3} = \\frac{\\partial r_i}{\\partial l_2} = 0\n\\]\nEvery factor produces one sparse Jacobian row — mostly zeros, with nonzero entries only in the columns corresponding to the handful of variables that factor actually touches.\nRecall that the approximate Hessian is built directly from these Jacobians, summed across all factors:\n\\[\nH = \\sum_i J_i^T \\Sigma_i^{-1} J_i\n\\]\nso this sparsity in each \\(J_i\\) propagates directly into \\(H\\): the Hessian is sparse too. This is precisely why sparse solvers like Cholesky and QR — exploiting this structure — are what make large-scale SLAM computationally feasible in the first place.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Sparsity and Fill-ins"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/sparsity.html#sparsity-why-slam-scales",
+    "href": "chapters/factor-graphs-slam/sparsity.html#sparsity-why-slam-scales",
+    "title": "Sparsity and Fill-ins",
+    "section": "",
+    "text": "This is the reason optimizing thousands of poses doesn’t take hours: the Hessian matrix contains mostly zeros.\nSLAM naturally produces sparse matrices because each pose \\(x_i\\) only depends on other poses in its immediate locality — nearby poses in the trajectory or landmarks it directly observed, not the entire state.\n\n\nSuppose the residual for one factor is:\n\\[\nr_i(x) = z_i - h_i(x)\n\\]\nwhere \\(x\\) is the complete state vector:\n\\[\nx = \\begin{bmatrix} x_1 \\\\ x_2 \\\\ x_3 \\\\ l_1 \\\\ l_2 \\end{bmatrix}\n\\]\nNow suppose \\(r_i\\) only actually depends on \\(x_2\\) and \\(l_1\\) — a completely reasonable scenario, since a single factor (like one landmark observation) only involves a couple of variables:\n\\[\nr_i = r_i(x_2, l_1)\n\\]\nThe Jacobian \\(J_i = \\dfrac{\\partial r_i}{\\partial x}\\) has one column per variable in \\(x\\) — five columns here. But since \\(r_i\\) doesn’t depend on \\(x_1\\), \\(x_3\\), or \\(l_2\\) at all:\n\\[\n\\frac{\\partial r_i}{\\partial x_1} = 0, \\qquad \\frac{\\partial r_i}{\\partial x_3} = \\frac{\\partial r_i}{\\partial l_2} = 0\n\\]\nEvery factor produces one sparse Jacobian row — mostly zeros, with nonzero entries only in the columns corresponding to the handful of variables that factor actually touches.\nRecall that the approximate Hessian is built directly from these Jacobians, summed across all factors:\n\\[\nH = \\sum_i J_i^T \\Sigma_i^{-1} J_i\n\\]\nso this sparsity in each \\(J_i\\) propagates directly into \\(H\\): the Hessian is sparse too. This is precisely why sparse solvers like Cholesky and QR — exploiting this structure — are what make large-scale SLAM computationally feasible in the first place.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Sparsity and Fill-ins"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/sparsity.html#sparse-isnt-the-whole-story",
+    "href": "chapters/factor-graphs-slam/sparsity.html#sparse-isnt-the-whole-story",
+    "title": "Sparsity and Fill-ins",
+    "section": "2 Sparse Isn’t the Whole Story",
+    "text": "2 Sparse Isn’t the Whole Story\nSimply having a sparse Hessian is not enough on its own — the matrix becomes much denser during the factorization step. This surprising fact is worth understanding, since it directly affects how efficient SLAM solvers actually are in practice.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Sparsity and Fill-ins"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/sparsity.html#fill-ins-during-factorization",
+    "href": "chapters/factor-graphs-slam/sparsity.html#fill-ins-during-factorization",
+    "title": "Sparsity and Fill-ins",
+    "section": "3 Fill-ins During Factorization",
+    "text": "3 Fill-ins During Factorization\nIf \\(H\\) is sparse going in, the resulting \\(R\\) after Cholesky factorization will not stay sparse. New non-zero entries can appear in places that were originally zero — these are called fill-ins.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Sparsity and Fill-ins"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/sparsity.html#why-do-fill-ins-appear",
+    "href": "chapters/factor-graphs-slam/sparsity.html#why-do-fill-ins-appear",
+    "title": "Sparsity and Fill-ins",
+    "section": "4 Why Do Fill-ins Appear?",
+    "text": "4 Why Do Fill-ins Appear?\nWe’re trying to solve the Gauss-Newton update:\n\\[\nH\\delta = -g \\qquad \\Longleftrightarrow \\qquad A^T A\\, \\delta = -A^T b\n\\]\nwhere \\(\\delta\\) is a stacked vector of all the unknowns:\n\\[\n\\delta = \\begin{bmatrix} \\delta_1 \\\\ \\delta_2 \\\\ \\delta_3 \\end{bmatrix}\n\\]\nOne approach would be to solve for every variable simultaneously. But for thousands of variables, this isn’t computationally possible to do directly — it’s simply too large a system to tackle head-on.\n\n4.1 A Familiar Idea: Gauss Elimination\nRemember solving small linear systems by elimination? Take:\n\\[\nx + y = 5, \\qquad 2x + y = 8\n\\]\nWe eliminate \\(x\\) by expressing it from the first equation, \\(x = y - 5\\), and substituting into the second: \\(2(y-5) + y = 8\\) — then solve.\nSLAM does the same thing, just at massive scale. Instead of solving 1000 poses all at once, we solve them one by one, by elimination.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Sparsity and Fill-ins"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/sparsity.html#where-the-new-edges-come-from",
+    "href": "chapters/factor-graphs-slam/sparsity.html#where-the-new-edges-come-from",
+    "title": "Sparsity and Fill-ins",
+    "section": "5 Where the New Edges Come From",
+    "text": "5 Where the New Edges Come From\nHere’s the key insight, illustrated with a small example. Suppose we have three variables connected like this:\n\\[\nB - M - L\n\\]\nInitially, \\(B\\) knows nothing about \\(L\\) — there’s no direct edge between them, only an indirect path through \\(M\\).\nNow, if we eliminate \\(M\\), the information that used to flow through \\(M\\) needs to be preserved somehow — it can’t just vanish. So a new constraint appears directly between \\(B\\) and \\(L\\), and the graph becomes:\n\\[\nB - L\n\\]\n\n\n\n\n\n\nNoteWhy It’s Called a “Fill-in”\n\n\n\nThe new edge fills in a matrix entry that used to be zero — hence fill-in. This same operation goes by another name in estimation theory: the Schur complement.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Sparsity and Fill-ins"
+    ]
+  },
+  {
+    "objectID": "chapters/factor-graphs-slam/sparsity.html#the-bigger-picture",
+    "href": "chapters/factor-graphs-slam/sparsity.html#the-bigger-picture",
+    "title": "Sparsity and Fill-ins",
+    "section": "6 The Bigger Picture",
+    "text": "6 The Bigger Picture\nThis reframes what elimination is actually doing: when you eliminate a variable, you are not throwing away information. You’re compressing all the information that variable carried into a new constraint between its former neighbors.\nThat compression is exactly why fill-ins appear — and why, even though SLAM’s Hessian starts out sparse, the matrices that show up partway through solving it can end up considerably denser. Managing this trade-off (choosing the order in which variables get eliminated, to minimize fill-in) turns out to be one of the most important practical concerns in making large-scale SLAM solvers fast.",
+    "crumbs": [
+      "SLAM",
+      "Factor Graphs for SLAM",
+      "Sparsity and Fill-ins"
     ]
   },
   {

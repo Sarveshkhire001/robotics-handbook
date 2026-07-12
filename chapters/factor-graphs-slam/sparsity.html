@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>About – Robotics Handbook</title>
+<title>Sparsity and Fill-ins – Robotics Handbook</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -26,25 +26,27 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-787e033c7b6f65c9dfccb6078e5d2d34.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-8487d1d9185897d8e9c8717c2b868418.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/factor-graphs-slam/variable_ordering.html" rel="next">
+<link href="../../chapters/factor-graphs-slam/gradient_newton.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-787e033c7b6f65c9dfccb6078e5d2d34.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-8487d1d9185897d8e9c8717c2b868418.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -73,8 +75,37 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<link rel="stylesheet" href="styles.css">
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
 </head>
 
 <body class="nav-sidebar docked quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
@@ -246,9 +277,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">
-      Robotics Handbook
-      </li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/sparsity.html">Sparsity and Fill-ins</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -263,7 +292,7 @@ ul.task-list li input[type="checkbox"] {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Robotics Handbook</a> 
+      <a href="../../">Robotics Handbook</a> 
         <div class="sidebar-tools-main">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
@@ -287,58 +316,58 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Factor Graphs for SLAM</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/overview.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/overview.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Overview</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/Visualizing_SLAM_with_factor_graphs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Visualizing Factor Graphs</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/least_squares.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/least_squares.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Least Squares &amp; MAP</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/linearization.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/linearization.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Linearization &amp; Whitening</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/cholesky_qr.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/cholesky_qr.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Cholesky &amp; QR</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/gradient_newton.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/gradient_newton.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Optimization Methods</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/sparsity.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/sparsity.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Sparsity and Fill-ins</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/variable_ordering.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/variable_ordering.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Variable Ordering and COLAMD</span></a>
   </div>
 </li>
@@ -355,7 +384,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chapters/factor-graphs-slam/handwritten-notes/factor-graphs-slam.html" class="sidebar-item-text sidebar-link">
+  <a href="../../chapters/factor-graphs-slam/handwritten-notes/factor-graphs-slam.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Factor Graphs for SLAM</span></a>
   </div>
 </li>
@@ -368,16 +397,33 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#sparsity-why-slam-scales" id="toc-sparsity-why-slam-scales" class="nav-link active" data-scroll-target="#sparsity-why-slam-scales"><span class="header-section-number">1</span> Sparsity: Why SLAM Scales</a>
+  <ul class="collapse">
+  <li><a href="#where-the-sparsity-comes-from" id="toc-where-the-sparsity-comes-from" class="nav-link" data-scroll-target="#where-the-sparsity-comes-from"><span class="header-section-number">1.1</span> Where the Sparsity Comes From</a></li>
+  </ul></li>
+  <li><a href="#sparse-isnt-the-whole-story" id="toc-sparse-isnt-the-whole-story" class="nav-link" data-scroll-target="#sparse-isnt-the-whole-story"><span class="header-section-number">2</span> Sparse Isn’t the Whole Story</a></li>
+  <li><a href="#fill-ins-during-factorization" id="toc-fill-ins-during-factorization" class="nav-link" data-scroll-target="#fill-ins-during-factorization"><span class="header-section-number">3</span> Fill-ins During Factorization</a></li>
+  <li><a href="#why-do-fill-ins-appear" id="toc-why-do-fill-ins-appear" class="nav-link" data-scroll-target="#why-do-fill-ins-appear"><span class="header-section-number">4</span> Why Do Fill-ins Appear?</a>
+  <ul class="collapse">
+  <li><a href="#a-familiar-idea-gauss-elimination" id="toc-a-familiar-idea-gauss-elimination" class="nav-link" data-scroll-target="#a-familiar-idea-gauss-elimination"><span class="header-section-number">4.1</span> A Familiar Idea: Gauss Elimination</a></li>
+  </ul></li>
+  <li><a href="#where-the-new-edges-come-from" id="toc-where-the-new-edges-come-from" class="nav-link" data-scroll-target="#where-the-new-edges-come-from"><span class="header-section-number">5</span> Where the New Edges Come From</a></li>
+  <li><a href="#the-bigger-picture" id="toc-the-bigger-picture" class="nav-link" data-scroll-target="#the-bigger-picture"><span class="header-section-number">6</span> The Bigger Picture</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SLAM</li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/overview.html">Factor Graphs for SLAM</a></li><li class="breadcrumb-item"><a href="../../chapters/factor-graphs-slam/sparsity.html">Sparsity and Fill-ins</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">About</h1>
+<h1 class="title">Sparsity and Fill-ins</h1>
 </div>
 
 
@@ -394,9 +440,97 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>About this site</p>
+<section id="sparsity-why-slam-scales" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="sparsity-why-slam-scales"><span class="header-section-number">1</span> Sparsity: Why SLAM Scales</h2>
+<p>This is the reason optimizing thousands of poses doesn’t take hours: <strong>the Hessian matrix contains mostly zeros.</strong></p>
+<p>SLAM naturally produces sparse matrices because each pose <span class="math inline">\(x_i\)</span> only depends on other poses <strong>in its immediate locality</strong> — nearby poses in the trajectory or landmarks it directly observed, not the entire state.</p>
+<section id="where-the-sparsity-comes-from" class="level3" data-number="1.1">
+<h3 data-number="1.1" class="anchored" data-anchor-id="where-the-sparsity-comes-from"><span class="header-section-number">1.1</span> Where the Sparsity Comes From</h3>
+<p>Suppose the residual for one factor is:</p>
+<p><span class="math display">\[
+r_i(x) = z_i - h_i(x)
+\]</span></p>
+<p>where <span class="math inline">\(x\)</span> is the <strong>complete</strong> state vector:</p>
+<p><span class="math display">\[
+x = \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ l_1 \\ l_2 \end{bmatrix}
+\]</span></p>
+<p>Now suppose <span class="math inline">\(r_i\)</span> only actually depends on <span class="math inline">\(x_2\)</span> and <span class="math inline">\(l_1\)</span> — a completely reasonable scenario, since a single factor (like one landmark observation) only involves a couple of variables:</p>
+<p><span class="math display">\[
+r_i = r_i(x_2, l_1)
+\]</span></p>
+<p>The Jacobian <span class="math inline">\(J_i = \dfrac{\partial r_i}{\partial x}\)</span> has one column per variable in <span class="math inline">\(x\)</span> — five columns here. But since <span class="math inline">\(r_i\)</span> doesn’t depend on <span class="math inline">\(x_1\)</span>, <span class="math inline">\(x_3\)</span>, or <span class="math inline">\(l_2\)</span> at all:</p>
+<p><span class="math display">\[
+\frac{\partial r_i}{\partial x_1} = 0, \qquad \frac{\partial r_i}{\partial x_3} = \frac{\partial r_i}{\partial l_2} = 0
+\]</span></p>
+<p><strong>Every factor produces one sparse Jacobian row</strong> — mostly zeros, with nonzero entries only in the columns corresponding to the handful of variables that factor actually touches.</p>
+<p>Recall that the approximate Hessian is built directly from these Jacobians, <a href="../../chapters/factor-graphs-slam/gradient_newton.html#the-full-gauss-newton-system">summed across all factors</a>:</p>
+<p><span class="math display">\[
+H = \sum_i J_i^T \Sigma_i^{-1} J_i
+\]</span></p>
+<p>so this sparsity in each <span class="math inline">\(J_i\)</span> propagates directly into <span class="math inline">\(H\)</span>: <strong>the Hessian is sparse too.</strong> This is precisely why sparse solvers like <a href="../../chapters/factor-graphs-slam/cholesky_qr.html">Cholesky and QR</a> — exploiting this structure — are what make large-scale SLAM computationally feasible in the first place.</p>
+</section>
+</section>
+<section id="sparse-isnt-the-whole-story" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="sparse-isnt-the-whole-story"><span class="header-section-number">2</span> Sparse Isn’t the Whole Story</h2>
+<p>Simply having a sparse Hessian is not enough on its own — the matrix <strong>becomes much denser during the factorization step</strong>. This surprising fact is worth understanding, since it directly affects how efficient SLAM solvers actually are in practice.</p>
+</section>
+<section id="fill-ins-during-factorization" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="fill-ins-during-factorization"><span class="header-section-number">3</span> Fill-ins During Factorization</h2>
+<p>If <span class="math inline">\(H\)</span> is sparse going in, the resulting <span class="math inline">\(R\)</span> after <a href="../../chapters/factor-graphs-slam/cholesky_qr.html#cholesky-factorization">Cholesky factorization</a> will <strong>not</strong> stay sparse. New non-zero entries can appear in places that were originally zero — these are called <strong>fill-ins</strong>.</p>
+</section>
+<section id="why-do-fill-ins-appear" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="why-do-fill-ins-appear"><span class="header-section-number">4</span> Why Do Fill-ins Appear?</h2>
+<p>We’re trying to solve the <a href="../../chapters/factor-graphs-slam/gradient_newton.html#the-full-gauss-newton-system">Gauss-Newton update</a>:</p>
+<p><span class="math display">\[
+H\delta = -g \qquad \Longleftrightarrow \qquad A^T A\, \delta = -A^T b
+\]</span></p>
+<p>where <span class="math inline">\(\delta\)</span> is a stacked vector of all the unknowns:</p>
+<p><span class="math display">\[
+\delta = \begin{bmatrix} \delta_1 \\ \delta_2 \\ \delta_3 \end{bmatrix}
+\]</span></p>
+<p>One approach would be to solve for every variable <strong>simultaneously</strong>. But for thousands of variables, this isn’t computationally possible to do directly — it’s simply too large a system to tackle head-on.</p>
+<section id="a-familiar-idea-gauss-elimination" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="a-familiar-idea-gauss-elimination"><span class="header-section-number">4.1</span> A Familiar Idea: Gauss Elimination</h3>
+<p>Remember solving small linear systems by elimination? Take:</p>
+<p><span class="math display">\[
+x + y = 5, \qquad 2x + y = 8
+\]</span></p>
+<p>We eliminate <span class="math inline">\(x\)</span> by expressing it from the first equation, <span class="math inline">\(x = y - 5\)</span>, and substituting into the second: <span class="math inline">\(2(y-5) + y = 8\)</span> — then solve.</p>
+<p><strong>SLAM does the same thing, just at massive scale.</strong> Instead of solving 1000 poses all at once, we solve them <strong>one by one, by elimination</strong>.</p>
+</section>
+</section>
+<section id="where-the-new-edges-come-from" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="where-the-new-edges-come-from"><span class="header-section-number">5</span> Where the New Edges Come From</h2>
+<p>Here’s the key insight, illustrated with a small example. Suppose we have three variables connected like this:</p>
+<p><span class="math display">\[
+B - M - L
+\]</span></p>
+<p>Initially, <span class="math inline">\(B\)</span> knows nothing about <span class="math inline">\(L\)</span> — there’s no direct edge between them, only an indirect path through <span class="math inline">\(M\)</span>.</p>
+<p>Now, if we <strong>eliminate <span class="math inline">\(M\)</span></strong>, the information that used to flow through <span class="math inline">\(M\)</span> needs to be preserved somehow — it can’t just vanish. So a <strong>new constraint appears directly between <span class="math inline">\(B\)</span> and <span class="math inline">\(L\)</span></strong>, and the graph becomes:</p>
+<p><span class="math display">\[
+B - L
+\]</span></p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Why It’s Called a “Fill-in”
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The new edge fills in a matrix entry that used to be zero — hence <strong>fill-in</strong>. This same operation goes by another name in estimation theory: the <strong>Schur complement</strong>.</p>
+</div>
+</div>
+</section>
+<section id="the-bigger-picture" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="the-bigger-picture"><span class="header-section-number">6</span> The Bigger Picture</h2>
+<p>This reframes what elimination is actually doing: <strong>when you eliminate a variable, you are not throwing away information.</strong> You’re <strong>compressing</strong> all the information that variable carried into a new constraint between its former neighbors.</p>
+<p>That compression is exactly why fill-ins appear — and why, even though SLAM’s Hessian starts out sparse, the matrices that show up partway through solving it can end up considerably denser. Managing this trade-off (choosing the <em>order</em> in which variables get eliminated, to minimize fill-in) turns out to be one of the most important practical concerns in making large-scale SLAM solvers fast.</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -812,6 +946,18 @@ ul.task-list li input[type="checkbox"] {
     }
   });
   </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/factor-graphs-slam/gradient_newton.html" class="pagination-link" aria-label="Optimization Methods">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Optimization Methods</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/factor-graphs-slam/variable_ordering.html" class="pagination-link" aria-label="Variable Ordering and COLAMD">
+        <span class="nav-page-text">Variable Ordering and COLAMD</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
 </div> <!-- /content -->
 
 
