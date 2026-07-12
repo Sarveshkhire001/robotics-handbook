@@ -1,0 +1,12 @@
+comments:
+  giscus:
+    repo: Sarveshkhire001/robotics-handbook
+    repo-id: R_kgDOTOQolg
+    category: General
+    category-id: DIC_kwDOTOQols4DBBXv
+    mapping: pathname
+    reactions-enabled: true
+    input-position: bottom
+    theme:
+      light: light
+      dark: dark

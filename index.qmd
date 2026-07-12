@@ -5,7 +5,8 @@ page-layout: full
 listing:
   - id: slam-chapters
     contents:
-      - chapters/factor-graphs-slam/overview.qmd
+      - title: "Factor Graphs for SLAM"
+        path: chapters/factor-graphs-slam/overview.qmd
     type: grid
     fields: [title, subtitle]
     sort: false
